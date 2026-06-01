@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HAMQuest — SASS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;800;900&family=Exo+2:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── DESIGN TOKENS ─── */
+    :root {
+      /* silver / chrome palette */
+      --chrome-hi:      #ffffff;
+      --chrome-light:   #e8edf2;
+      --chrome-mid:     #c8d0d8;
+      --chrome-base:    #a8b4be;
+      --chrome-shadow:  #6a7880;
+      --chrome-dark:    #3a4448;
+      --chrome-deepest: #1a2024;
+
+      --bg:             #d0d8e0;       /* page background — brushed metal */
+      --panel-bg:       #e4eaee;
+      --chat-bg:        #dde4ea;
+
+      /* accent glow colors */
+      --cyan-glow:      #00e5ff;
+      --cyan-dim:       #00a0b8;
+      --cyan-dark:      #006070;
+      --red-del:        #ff3344;
+      --green-ok:       #00ff88;
+      --green-dim:      #009955;
+      --amber:          #ffaa00;
+
+      /* usernames */
+      --color-gp:       #00e5ff;   /* Benjamin (General Partner) */
+      --color-tl:       #ffaa00;   /* Thitikorn (Partner, Tech Lead) */
+
+      /* 3D border — bevel effect:
+         top/left edge = bright highlight, bottom/right = deep shadow */
+      --bevel-hi:       #ffffff99;
+      --bevel-sh:       #1a202499;
+      --bevel-w:        3px;
+
+      /* fonts */
+      --font-head:      'Orbitron', monospace;
+      --font-body:      'Exo 2', sans-serif;
+
+      --fs-xs:   10px;
+      --fs-sm:   12px;
+      --fs-base: 13px;
+      --fs-lg:   15px;
+      --fs-xl:   20px;
+      --fs-hero: 28px;
+
+      --chat-width: 36%;
+      --nav-h:      44px;
+      --radius:     2px;     /* sharp corners — futuristic */
+      --radius-lg:  4px;
+    }
+
+    /* ─── 3D BEVEL MIXIN ─────────────────────────────────────────
+       Simulates an extruded metallic surface:
+       bright top-left edge, dark bottom-right edge.
+    ──────────────────────────────────────────────────────────────*/
+    .bevel {
+      border: var(--bevel-w) solid var(--chrome-mid);
+      box-shadow:
+        inset 1px 1px 0 var(--bevel-hi),
+        inset -1px -1px 0 var(--bevel-sh),
+        3px 3px 0 var(--chrome-shadow),
+        -1px -1px 0 var(--chrome-light);
+    }
+    .bevel-inset {
+      border: var(--bevel-w) solid var(--chrome-mid);
+      box-shadow:
+        inset 2px 2px 4px var(--bevel-sh),
+        inset -1px -1px 2px var(--bevel-hi);
+    }
+
+    /* scanline texture overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.03) 2px,
+        rgba(0,0,0,0.03) 4px
+      );
+      z-index: 9999;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-body);
+      font-size: var(--fs-base);
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      color: var(--chrome-deepest);
+    }
+
+    /* ─── TOP NAV ─── */
+    .top-nav {
+      background: linear-gradient(180deg, var(--chrome-dark) 0%, var(--chrome-deepest) 100%);
+      height: var(--nav-h);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      flex-shrink: 0;
+      border-bottom: 2px solid var(--cyan-dim);
+      box-shadow: 0 2px 12px var(--cyan-dark), 0 4px 0 #000a;
+    }
+    .top-nav .brand {
+      font-family: var(--font-head);
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 0.18em;
+      color: var(--chrome-light);
+      margin-right: 24px;
+      text-shadow: 0 0 12px var(--cyan-glow), 0 0 2px var(--cyan-glow);
+    }
+    .top-nav .nav-tabs { display: flex; height: 100%; }
+    .top-nav .nav-tab {
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      font-family: var(--font-head);
+      font-size: var(--fs-xs);
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: var(--chrome-base);
+      border: none;
+      background: transparent;
+      height: 100%;
+      transition: color 0.15s, text-shadow 0.15s;
+      border-right: 1px solid #ffffff10;
+    }
+    .top-nav .nav-tab:hover {
+      color: var(--chrome-light);
+      text-shadow: 0 0 8px var(--cyan-glow);
+    }
+    .top-nav .nav-tab.active {
+      color: var(--cyan-glow);
+      text-shadow: 0 0 16px var(--cyan-glow), 0 0 4px var(--cyan-glow);
+      border-bottom: 2px solid var(--cyan-glow);
+      background: #00e5ff12;
+    }
+    .top-nav .nav-tab .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--red-del);
+      box-shadow: 0 0 8px var(--red-del);
+      display: inline-block;
+      margin-right: 5px;
+    }
+
+    /* ─── MAIN ─── */
+    .main { display: flex; flex: 1; overflow: hidden; }
+
+    /* ─── CHAT PANEL ─── */
+    .chat-panel {
+      width: var(--chat-width);
+      min-width: 280px;
+      max-width: 560px;
+      background: linear-gradient(160deg, var(--chrome-light) 0%, var(--chrome-mid) 100%);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-right: 2px solid var(--chrome-shadow);
+      box-shadow: 4px 0 12px #0006;
+    }
+
+    .chat-topbar {
+      background: linear-gradient(180deg, var(--panel-bg) 0%, var(--chrome-mid) 100%);
+      padding: 10px 14px 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-shrink: 0;
+      border-bottom: 1px solid var(--chrome-shadow);
+      box-shadow: inset 0 1px 0 var(--bevel-hi), 0 2px 0 var(--bevel-sh);
+    }
+    .chat-topbar .title {
+      font-family: var(--font-head);
+      font-size: var(--fs-lg);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--chrome-deepest);
+    }
+    .chat-topbar .subtitle { font-size: var(--fs-xs); color: var(--chrome-shadow); margin-top: 2px; font-weight: 500; letter-spacing: 0.05em; }
+    .chat-topbar .alert-link { font-size: var(--fs-xs); color: var(--cyan-dim); cursor: pointer; text-decoration: underline; white-space: nowrap; font-weight: 500; }
+
+    .chat-subheader {
+      background: linear-gradient(180deg, var(--chrome-mid) 0%, var(--chrome-base) 100%);
+      padding: 5px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      border-bottom: 1px solid var(--chrome-shadow);
+    }
+    .chat-subheader .left { display: flex; align-items: center; gap: 8px; }
+    .hamburger { font-size: 16px; color: var(--chrome-dark); cursor: pointer; }
+    .notif-badge {
+      background: var(--red-del);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      font-family: var(--font-head);
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 8px var(--red-del);
+    }
+    .chat-subheader .right { font-family: var(--font-head); font-size: var(--fs-xs); color: var(--chrome-dark); letter-spacing: 0.06em; }
+
+    .chat-messages { flex: 1; overflow-y: auto; padding: 8px 0; }
+
+    .chat-msg {
+      padding: 5px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .chat-msg .meta { display: flex; align-items: baseline; gap: 6px; }
+    .chat-msg .username {
+      font-family: var(--font-head);
+      font-size: var(--fs-xs);
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+    }
+    .chat-msg .username.gp { color: var(--color-gp); text-shadow: 0 0 8px var(--cyan-glow); }
+    .chat-msg .username.tl { color: var(--color-tl); text-shadow: 0 0 8px var(--amber); }
+    .chat-msg .timestamp { font-size: var(--fs-xs); color: var(--chrome-shadow); }
+    .chat-msg .actions { margin-left: auto; display: flex; gap: 6px; opacity: 0; transition: opacity 0.15s; }
+    .chat-msg:hover .actions { opacity: 1; }
+    .chat-msg .actions span { cursor: pointer; font-size: 13px; color: var(--chrome-shadow); }
+    .chat-msg .body { font-size: var(--fs-base); color: var(--chrome-deepest); line-height: 1.5; font-weight: 400; }
+
+    /* embedded screenshot card */
+    .embed-screenshot {
+      margin: 6px 0 4px;
+      border: var(--bevel-w) solid var(--chrome-mid);
+      box-shadow:
+        inset 1px 1px 0 var(--bevel-hi),
+        inset -1px -1px 0 var(--bevel-sh),
+        3px 3px 0 var(--chrome-shadow);
+      border-radius: var(--radius);
+      padding: 0;
+      background: var(--chrome-light);
+      max-width: 340px;
+      overflow: hidden;
+    }
+    .embed-screenshot .ss-nav {
+      background: var(--chrome-deepest);
+      padding: 4px 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ss-brand { font-family: var(--font-head); font-size: 8px; color: var(--chrome-mid); letter-spacing: 0.1em; }
+    .ss-tabs { display: flex; gap: 2px; }
+    .ss-tab { font-size: 7px; color: var(--chrome-shadow); padding: 1px 4px; border: 1px solid #ffffff20; }
+    .ss-tab.active { color: var(--chrome-light); border-color: #ffffff50; }
+    .embed-screenshot .ss-body {
+      padding: 6px 8px;
+      font-size: 8px;
+      color: var(--chrome-dark);
+      line-height: 1.5;
+    }
+    .ss-row { display: flex; align-items: center; gap: 6px; padding: 1px 0; }
+    .ss-label { color: var(--chrome-shadow); min-width: 60px; font-size: 7px; }
+    .ss-val { color: var(--chrome-deepest); font-size: 8px; }
+    .ss-edit-btn { font-size: 7px; border: 1px solid var(--chrome-base); padding: 1px 5px; background: var(--chrome-light); color: var(--chrome-dark); margin-left: auto; }
+
+    /* embedded role card */
+    .embed-roles {
+      margin: 6px 0 4px;
+      border: var(--bevel-w) solid var(--chrome-mid);
+      box-shadow:
+        inset 1px 1px 0 var(--bevel-hi),
+        inset -1px -1px 0 var(--bevel-sh),
+        3px 3px 0 var(--chrome-shadow);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      background: #f0f4f8;
+      max-width: 340px;
+      font-size: var(--fs-xs);
+      color: var(--chrome-dark);
+      line-height: 1.7;
+    }
+    .embed-roles .role-title { font-weight: 700; }
+    .embed-roles .role-note { font-style: italic; color: var(--chrome-shadow); }
+
+    /* composer */
+    .composer-label {
+      padding: 5px 14px;
+      font-family: var(--font-head);
+      font-size: var(--fs-xs);
+      letter-spacing: 0.08em;
+      color: var(--chrome-shadow);
+      flex-shrink: 0;
+      background: linear-gradient(180deg, var(--chrome-mid) 0%, var(--panel-bg) 100%);
+      border-top: 1px solid var(--chrome-shadow);
+      border-bottom: 1px solid var(--chrome-mid);
+    }
+
+    .chat-input-area {
+      padding: 8px 14px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-shrink: 0;
+      background: var(--panel-bg);
+    }
+    .chat-input {
+      flex: 1;
+      border: var(--bevel-w) solid var(--chrome-mid);
+      box-shadow: inset 2px 2px 4px var(--bevel-sh), inset -1px -1px 2px var(--bevel-hi);
+      border-radius: var(--radius);
+      padding: 7px 10px;
+      font-size: var(--fs-base);
+      font-family: var(--font-body);
+      background: var(--chrome-light);
+      outline: none;
+      color: var(--chrome-deepest);
+    }
+    .chat-input:focus { border-color: var(--cyan-dim); box-shadow: inset 2px 2px 4px var(--bevel-sh), 0 0 0 2px #00e5ff33; }
+    .img-btn, .send-btn {
+      border: var(--bevel-w) solid var(--chrome-mid);
+      box-shadow:
+        inset 1px 1px 0 var(--bevel-hi),
+        inset -1px -1px 0 var(--bevel-sh),
+        2px 2px 0 var(--chrome-shadow);
+      border-radius: var(--radius);
+      padding: 7px 14px;
+      font-family: var(--font-head);
+      font-size: var(--fs-xs);
+      letter-spacing: 0.07em;
+      cursor: pointer;
+      background: linear-gradient(180deg, var(--chrome-light) 0%, var(--chrome-mid) 100%);
+      color: var(--chrome-deepest);
+      font-weight: 600;
+      transition: transform 0.08s, box-shadow 0.08s;
+    }
+    .send-btn {
+      background: linear-gradient(180deg, var(--cyan-dim) 0%, var(--cyan-dark) 100%);
+      color: var(--chrome-light);
+      border-color: var(--cyan-dark);
+      text-shadow: 0 0 8px var(--cyan-glow);
+      box-shadow:
+        inset 1px 1px 0 #00e5ff66,
+        inset -1px -1px 0 #00304044,
+        2px 2px 0 var(--chrome-shadow);
+    }
+    .img-btn:active, .send-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 0 0 0 transparent;
+    }
+
+    /* mini bar */
+    .mini-bar {
+      border-top: 2px solid var(--cyan-dim);
+      background: linear-gradient(180deg, var(--chrome-deepest) 0%, #0a1015 100%);
+      box-shadow: inset 0 1px 0 #ffffff15;
+      padding: 8px 14px;
+      font-size: var(--fs-xs);
+      color: var(--chrome-base);
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .mini-label {
+      font-family: var(--font-head);
+      white-space: nowrap;
+      background: linear-gradient(180deg, var(--chrome-base) 0%, var(--chrome-shadow) 100%);
+      color: var(--chrome-deepest);
+      padding: 4px 8px;
+      border-radius: var(--radius);
+      font-size: var(--fs-xs);
+      letter-spacing: 0.06em;
+      border: 1px solid var(--chrome-shadow);
+      box-shadow: inset 1px 1px 0 var(--bevel-hi);
+    }
+    .mini-text { line-height: 1.55; color: #7a8e98; }
+
+    /* ─── QUEST LIST PANEL ─── */
+    .quest-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: linear-gradient(160deg, #c8d4dc 0%, #b8c8d4 100%);
+    }
+
+    .quest-body { flex: 1; overflow-y: auto; padding: 0; }
+
+    /* quest row — no card, just sections with dividers */
+    .quest-row {
+      padding: 28px 40px 20px;
+      border-bottom: 1px solid var(--chrome-shadow);
+      box-shadow: 0 1px 0 var(--bevel-hi);
+      background: linear-gradient(180deg, #d8e4ec88 0%, transparent 100%);
+      transition: background 0.15s;
+    }
+    .quest-row:hover { background: linear-gradient(180deg, #c0d0dc55 0%, transparent 100%); }
+
+    .quest-row .q-label {
+      font-family: var(--font-head);
+      font-size: var(--fs-xs);
+      letter-spacing: 0.15em;
+      color: var(--chrome-shadow);
+      margin-bottom: 8px;
+    }
+
+    .quest-row .q-title-row {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .quest-row .q-title {
+      font-family: var(--font-head);
+      font-size: var(--fs-hero);
+      font-weight: 800;
+      color: var(--chrome-deepest);
+      line-height: 1.15;
+      letter-spacing: 0.02em;
+    }
+    .quest-row .q-title.large { font-size: 26px; }
+
+    .new-badge {
+      font-family: var(--font-head);
+      font-size: var(--fs-xs);
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--chrome-deepest);
+      background: linear-gradient(180deg, var(--chrome-light) 0%, var(--chrome-mid) 100%);
+      border: var(--bevel-w) solid var(--chrome-mid);
+      box-shadow:
+        inset 1px 1px 0 var(--bevel-hi),
+        inset -1px -1px 0 var(--bevel-sh),
+        2px 2px 0 var(--chrome-shadow);
+      border-radius: var(--radius);
+      padding: 2px 10px;
+    }
+    .hambits-val {
+      font-family: var(--font-head);
+      font-size: var(--fs-sm);
+      color: var(--chrome-shadow);
+      letter-spacing: 0.08em;
+      margin-left: auto;
+    }
+
+    .quest-row .q-desc {
+      font-size: var(--fs-base);
+      color: var(--chrome-shadow);
+      font-style: italic;
+      line-height: 1.5;
+      margin-bottom: 12px;
+      font-weight: 400;
+    }
+
+    /* progress bar */
+    .progress-wrap {
+      background: var(--chrome-shadow);
+      border-radius: 2px;
+      height: 6px;
+      margin-bottom: 6px;
+      box-shadow: inset 1px 1px 2px #0006, inset -1px -1px 1px var(--bevel-hi);
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--cyan-dim), var(--cyan-glow));
+      border-radius: 2px;
+      box-shadow: 0 0 8px var(--cyan-glow);
+    }
+    .p-empty { width: 0%; }
+
+    .steps-label {
+      font-family: var(--font-head);
+      font-size: var(--fs-xs);
+      color: var(--chrome-shadow);
+      letter-spacing: 0.06em;
+      margin-bottom: 10px;
+    }
+
+    .q-arrows { display: flex; gap: 8px; margin-bottom: 10px; }
+    .q-arrow {
+      font-size: var(--fs-sm);
+      color: var(--chrome-shadow);
+      cursor: pointer;
+      line-height: 1;
+      padding: 2px 6px;
+      border: 1px solid var(--chrome-base);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, var(--chrome-light) 0%, var(--chrome-mid) 100%);
+      box-shadow: inset 1px 1px 0 var(--bevel-hi), 1px 1px 0 var(--chrome-shadow);
+      transition: transform 0.08s;
+    }
+    .q-arrow:hover { color: var(--chrome-deepest); }
+    .q-arrow:active { transform: translate(1px,1px); box-shadow: none; }
+
+    .q-actions { display: flex; gap: 14px; }
+    .q-action { font-family: var(--font-head); font-size: var(--fs-xs); letter-spacing: 0.1em; cursor: pointer; }
+    .q-action.complete { color: var(--green-dim); }
+    .q-action.complete:hover { color: var(--green-ok); text-shadow: 0 0 8px var(--green-ok); }
+    .q-action.delete { color: #aa2233; }
+    .q-action.delete:hover { color: var(--red-del); text-shadow: 0 0 8px var(--red-del); }
+  </style>
+</head>
+<body>
+
+  <!-- ═══ TOP NAV ═══ -->
+  <nav class="top-nav">
+    <div class="brand">HAMQUEST</div>
+    <div class="nav-tabs">
+      <button class="nav-tab">ITTH</button>
+      <button class="nav-tab">RBES</button>
+      <button class="nav-tab">CPAS</button>
+      <button class="nav-tab">S&amp;MGMT</button>
+      <button class="nav-tab active">SASS</button>
+      <button class="nav-tab">HAMCORP</button>
+      <button class="nav-tab"><span class="dot"></span>ADMIN</button>
+    </div>
+  </nav>
+
+  <!-- ═══ MAIN ═══ -->
+  <div class="main">
+
+    <!-- ─── CHAT ─── -->
+    <aside class="chat-panel">
+
+      <div class="chat-topbar">
+        <div>
+          <div class="title">HAM Chat</div>
+          <div class="subtitle">Room / SASS Qiaoli (Partner, Design Lead) Room</div>
+        </div>
+        <span class="alert-link">Enable alerts</span>
+      </div>
+
+      <div class="chat-subheader">
+        <div class="left">
+          <span class="hamburger">≡</span>
+          <div class="notif-badge">1</div>
+        </div>
+        <span class="right">JOBbb</span>
+      </div>
+
+      <div class="chat-messages">
+
+        <div class="chat-msg">
+          <div class="meta">
+            <span class="username gp">Benjamin (General Partner)</span>
+            <span class="timestamp">· room · 05:36 PM</span>
+            <div class="actions"><span>↩</span><span>♡</span></div>
+          </div>
+          <div class="body">it seems some hamworlds are displaying full name and also hamcorp is twice</div>
+          <!-- mini embedded screenshot -->
+          <div class="embed-screenshot">
+            <div class="ss-nav">
+              <span class="ss-brand">HAMQUEST</span>
+              <div class="ss-tabs">
+                <div class="ss-tab">ITTH</div>
+                <div class="ss-tab">CLOWN PUMP</div>
+                <div class="ss-tab">S&amp;MGMT</div>
+                <div class="ss-tab">RULEBREAKERS</div>
+                <div class="ss-tab active">HAMCORP</div>
+                <div class="ss-tab">HAMC</div>
+                <div class="ss-tab">SAS</div>
+              </div>
+            </div>
+            <div class="ss-body">
+              <div class="ss-row"><span class="ss-label">← Qiaoli</span><span class="ss-val">Quests</span></div>
+              <div class="ss-row"><span class="ss-label">MQ-01 · S&amp;MGMT:</span><span class="ss-val">I · Visualize and Enact Seasons Zero and One</span><span class="ss-edit-btn">EDIT</span></div>
+              <div class="ss-row"><span class="ss-label" style="color:#aaa;">In Progress</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-msg">
+          <div class="meta">
+            <span class="username tl">Thitikorn (Partner, Tech Lead)</span>
+            <span class="timestamp">· room · 05:38 PM</span>
+            <div class="actions"><span>↩</span><span>♡</span></div>
+          </div>
+          <div class="body">strange, I dont see the duplication. I'll look into it</div>
+        </div>
+
+        <div class="chat-msg">
+          <div class="meta">
+            <span class="username gp">Benjamin (General Partner)</span>
+            <span class="timestamp">· room · 12:14 PM</span>
+            <div class="actions"><span>↩</span><span>♡</span></div>
+          </div>
+          <div class="body">wooops wrong place</div>
+        </div>
+
+        <div class="chat-msg">
+          <div class="meta">
+            <span class="username gp">Benjamin (General Partner)</span>
+            <span class="timestamp">· room · 01:05 PM</span>
+            <div class="actions"><span>↩</span><span>♡</span></div>
+          </div>
+          <div class="body">This is from CPAS, but it's a model for the subquest i'm about to do</div>
+          <!-- embedded role list -->
+          <div class="embed-roles">
+            <div><span class="role-title">chair of the board of directors</span> - Clownjamin</div>
+            <div><span class="role-title">creative advisor, member of board:</span> Clownli</div>
+            <div><span class="role-title">technical advisor, member of board:</span> Clownvans</div>
+            <div><span class="role-title">CEO</span> - responsible for orchestrating the whole vision of the company: <span class="role-note">Unfilled</span></div>
+            <div><span class="role-title">CTO</span> - responsible for the technology stack we're going to use: <span class="role-note">Unfilled</span></div>
+            <div><span class="role-title">COO</span> - responsible for the overall creative vision: <span class="role-note">Unfilled</span></div>
+            <div><span class="role-title">CMO</span> - responsible for marketing: <span class="role-note">Unfilled</span></div>
+            <div><span class="role-title">Head of Animation:</span> Responsible for All: <span class="role-note">Unfilled</span></div>
+            <div><span class="role-title">SHOWRUNNER(S) FAFA BABY:</span> Responsible for Fafa Baby: <span class="role-note">Unfilled</span></div>
+            <div><span class="role-title">Fafa Baby Producer:</span> Responsible for writing fafa baby, with the showrunners: <span class="role-note">Unfilled</span></div>
+            <div><span class="role-title">Fafaworld Character Animation:</span> Responsible for Character Animation: <span class="role-note">Unfilled</span></div>
+            <div><span class="role-title">Fafa World Setting Animation Lead:</span> Responsible for world creation in Fafa Baby: <span class="role-note">Unfilled</span></div>
+          </div>
+        </div>
+
+      </div><!-- /messages -->
+
+      <div class="composer-label">ROOM COMPOSER / SASS QIAOLI (PARTNER, DESIGN LEAD) ROOM</div>
+
+      <div class="chat-input-area">
+        <input class="chat-input" type="text" placeholder="Send a room message" value="testing testing" />
+        <button class="img-btn">IMAGE</button>
+        <button class="send-btn">SEND</button>
+      </div>
+
+      <div class="mini-bar">
+        <span class="mini-label">MYHAM MINI</span>
+        <span class="mini-text">
+          You have 0 HAMbits. If you do Visualize and Enact Seasons Zero and One, Proposal for VolcanoTV,
+          Enroll 10 Paying Students at ~$1000 per month, Enroll 5 Student-Owners at $0 Per Month,
+          Cast A Quorum Of the Roles, Make $200,000 for Benjamin, Release and activate proposal for
+          Ninman Intersection Social Arcology, Cast The Superstudio, Sell 100,000 Hambits...
+        </span>
+      </div>
+
+    </aside>
+
+    <!-- ─── QUEST LIST ─── -->
+    <main class="quest-panel">
+      <div class="quest-body">
+
+        <!-- QUEST 1 — large, no label shown at top (scrolled in) -->
+        <div class="quest-row">
+          <div class="q-label">SOCIAL ARCOLOGY SUPER STUDIO MAIN QUEST 1</div>
+          <div class="q-title-row">
+            <div class="q-title large">Release and activate proposal for Ninman Intersection Social Arcology</div>
+          </div>
+          <div class="q-title-row" style="margin-top:-6px; margin-bottom:10px;">
+            <span class="new-badge">NEW</span>
+            <span class="hambits-val">10000 HAMbits</span>
+          </div>
+          <div class="q-desc">Activate through pseudo-events.</div>
+          <div class="q-arrows"><span class="q-arrow">↓</span></div>
+          <div class="q-actions">
+            <span class="q-action complete">✓ COMPLETE</span>
+            <span class="q-action delete">✕ DELETE</span>
+          </div>
+        </div>
+
+        <!-- QUEST 2 -->
+        <div class="quest-row">
+          <div class="q-label">SOCIAL ARCOLOGY SUPER STUDIO MAIN QUEST 2</div>
+          <div class="q-title-row">
+            <div class="q-title">Find Patron For Ninmarcology</div>
+            <span class="new-badge">NEW</span>
+          </div>
+          <div class="progress-wrap"><div class="progress-fill p-empty"></div></div>
+          <div class="steps-label">0/1 Steps</div>
+          <div class="q-arrows">
+            <span class="q-arrow">↑</span>
+            <span class="q-arrow">↓</span>
+          </div>
+          <div class="q-actions">
+            <span class="q-action complete">✓ COMPLETE</span>
+            <span class="q-action delete">✕ DELETE</span>
+          </div>
+        </div>
+
+        <!-- QUEST 3 -->
+        <div class="quest-row">
+          <div class="q-label">SOCIAL ARCOLOGY SUPER STUDIO MAIN QUEST 3</div>
+          <div class="q-title-row">
+            <div class="q-title">Cast The Superstudio</div>
+            <span class="new-badge">NEW</span>
+            <span class="hambits-val">500 HAMbits</span>
+          </div>
+          <div class="progress-wrap"><div class="progress-fill p-empty"></div></div>
+          <div class="steps-label">0/1 Steps</div>
+          <div class="q-arrows"><span class="q-arrow">↑</span></div>
+          <div class="q-actions">
+            <span class="q-action complete">✓ COMPLETE</span>
+            <span class="q-action delete">✕ DELETE</span>
+          </div>
+        </div>
+
+      </div><!-- /quest-body -->
+    </main>
+
+  </div>
+
+</body>
+</html>
