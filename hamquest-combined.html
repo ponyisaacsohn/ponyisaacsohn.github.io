@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HAMQuest</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400&family=Bungee&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Fredoka+One&family=Bubblegum+Sans&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=Orbitron:wght@400;600;700;800;900&family=Exo+2:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+  <style>
+    /* ===== SHARED RESET ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+    /* ===== PAGE TOGGLE ===== */
+    .page { display: none; flex: 1; overflow: hidden; min-height: 0; }
+    .page.active { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+
+    /* ===== SHARED NAV STRUCTURE ===== */
+    .top-nav { height: 44px; display: flex; align-items: center; padding: 0 16px; flex-shrink: 0; gap: 0; }
+    .top-nav .nav-tabs { display: flex; height: 100%; }
+    .top-nav .nav-tab { padding: 0 16px; display: flex; align-items: center; cursor: pointer; border: none; height: 100%; font-size: 11px; letter-spacing: 0.08em; background: transparent; }
+
+    /* shared .main inside each page */
+    .main { display: flex; flex: 1; overflow: hidden; min-height: 0; }
+
+
+    /* ============================================================
+       ITTH STYLES — scoped to body.p-itth and #p-itth
+    ============================================================ */
+    body.p-itth .top-nav { background: #0d0d0d; }
+    body.p-itth .top-nav .brand { font-family: 'Nunito', sans-serif; font-weight: 900; color: #fff; font-size: 15px; letter-spacing: 0.1em; margin-right: 20px; }
+    body.p-itth .top-nav .nav-tab { font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 800; letter-spacing: 0.08em; color: #fff; transition: background 0.15s; }
+    body.p-itth .top-nav .nav-tab:hover { background: rgba(255,255,255,0.12); }
+    body.p-itth .top-nav .nav-tab.active { background: #fff; color: #0d0d0d; }
+
+    #p-itth { background: #f7f5ff; font-family: 'Nunito', sans-serif; }
+
+    /* ITTH Chat Panel */
+    #p-itth .chat-panel { width: 360px; min-width: 280px; display: flex; flex-direction: column; background: #fff; border-right: 1px solid #e5e0f8; flex-shrink: 0; }
+    #p-itth .chat-topbar { padding: 10px 16px; border-bottom: 1px solid #e5e0f8; flex-shrink: 0; }
+    #p-itth .chat-topbar .room-label { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; color: #a855f7; text-transform: uppercase; }
+    #p-itth .chat-topbar .room-name { font-size: 14px; font-weight: 800; color: #1a1a2e; margin-top: 1px; }
+    #p-itth .chat-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    #p-itth .chat-msg { display: flex; gap: 10px; }
+    #p-itth .chat-msg .avatar { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 900; color: #fff; margin-top: 2px; }
+    #p-itth .chat-msg .avatar.green { background: linear-gradient(135deg, #39d98a, #22c55e); }
+    #p-itth .chat-msg .avatar.purple { background: linear-gradient(135deg, #a855f7, #7c3aed); }
+    #p-itth .chat-msg .msg-body { flex: 1; }
+    #p-itth .chat-msg .msg-name { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; margin-bottom: 3px; }
+    #p-itth .chat-msg .msg-name.green { color: #16a34a; }
+    #p-itth .chat-msg .msg-name.purple { color: #7c3aed; }
+    #p-itth .chat-msg .msg-text { font-size: 13px; font-weight: 500; color: #2d2d2d; line-height: 1.5; background: #f7f5ff; border-radius: 4px 12px 12px 12px; padding: 8px 12px; }
+    #p-itth .chat-composer { padding: 12px 16px; border-top: 1px solid #e5e0f8; flex-shrink: 0; }
+    #p-itth .chat-composer .composer-wrap { position: relative; }
+    #p-itth .chat-composer .composer-wrap::before { content: ''; position: absolute; inset: -2px; border-radius: 10px; background: linear-gradient(135deg, #39d98a, #a855f7); z-index: 0; padding: 2px; }
+    #p-itth .chat-composer input { position: relative; z-index: 1; width: 100%; background: #fff; border: none; border-radius: 8px; padding: 10px 14px; font-family: 'Nunito', sans-serif; font-size: 13px; color: #1a1a2e; outline: none; }
+
+    /* ITTH Quest Panel */
+    #p-itth .quest-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #f7f5ff; }
+    #p-itth .quest-topbar { padding: 10px 20px; border-bottom: 1px solid #e5e0f8; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; background: #fff; }
+    #p-itth .quest-topbar .back-link { font-size: 12px; font-weight: 700; color: #a855f7; cursor: pointer; letter-spacing: 0.04em; }
+    #p-itth .quest-topbar .quest-title-bar { font-size: 14px; font-weight: 800; color: #1a1a2e; flex: 1; margin: 0 16px; }
+    #p-itth .quest-topbar .edit-btn { font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 800; letter-spacing: 0.08em; background: transparent; border: 2px solid #a855f7; color: #a855f7; padding: 4px 14px; border-radius: 6px; cursor: pointer; }
+    #p-itth .quest-body { flex: 1; overflow-y: auto; padding: 24px 32px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+    #p-itth .quest-status-row { width: 100%; max-width: 560px; display: flex; align-items: center; gap: 10px; }
+    #p-itth .status-pill { font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 12px; border-radius: 20px; }
+    #p-itth .status-pill.in-progress { background: #fef3c7; color: #d97706; border: 1px solid #fcd34d; }
+
+    /* ITTH quest card with gradient border */
+    #p-itth .quest-card { width: 100%; max-width: 560px; background: #fff; border-radius: 12px; padding: 24px; position: relative; }
+    #p-itth .quest-card::before { content: ''; position: absolute; inset: -2px; border-radius: 14px; background: linear-gradient(135deg, #39d98a, #a855f7); z-index: -1; }
+    #p-itth .quest-card-title { font-size: 17px; font-weight: 900; color: #1a1a2e; margin-bottom: 12px; line-height: 1.3; }
+    #p-itth .quest-card-desc { font-size: 13px; font-weight: 500; color: #4a4a6a; line-height: 1.6; margin-bottom: 14px; }
+    #p-itth .quest-card-assignee { font-size: 12px; font-weight: 700; color: #7c3aed; margin-bottom: 14px; }
+    #p-itth .quest-card-assignee span { color: #1a1a2e; font-weight: 600; }
+    #p-itth .hamdoc-link { font-size: 12px; font-weight: 700; color: #39d98a; cursor: pointer; text-decoration: underline; margin-bottom: 16px; display: block; }
+    #p-itth .grad-divider { height: 2px; background: linear-gradient(135deg, #39d98a, #a855f7); border-radius: 2px; margin: 4px 0 16px; }
+    #p-itth .quest-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    #p-itth .quest-btn { font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 800; letter-spacing: 0.06em; padding: 8px 18px; border-radius: 8px; cursor: pointer; border: none; }
+    #p-itth .quest-btn.complete { background: linear-gradient(135deg, #39d98a, #22c55e); color: #fff; }
+    #p-itth .quest-btn.delete { background: #fef2f2; color: #dc2626; border: 1px solid #fca5a5; }
+    #p-itth .quest-btn.assignees { background: #f5f0ff; color: #7c3aed; border: 1px solid #c4b5fd; }
+
+    #p-itth .subquests-section { width: 100%; max-width: 560px; }
+    #p-itth .subquests-label { font-size: 11px; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: #a855f7; margin-bottom: 14px; }
+    #p-itth .subquest-card { background: #fff; border-radius: 10px; padding: 16px 18px; margin-bottom: 12px; position: relative; }
+    #p-itth .subquest-card::before { content: ''; position: absolute; inset: -2px; border-radius: 12px; background: linear-gradient(135deg, #39d98a, #a855f7); z-index: -1; }
+    #p-itth .sq-label { font-size: 9px; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: #a855f7; margin-bottom: 4px; }
+    #p-itth .sq-title { font-size: 14px; font-weight: 800; color: #1a1a2e; margin-bottom: 8px; }
+    #p-itth .sq-body { font-size: 12px; font-weight: 500; color: #4a4a6a; line-height: 1.55; }
+    #p-itth .sq-body .at-tag { color: #7c3aed; font-weight: 700; }
+
+
+    /* ============================================================
+       RBES STYLES — scoped to body.p-rbes and #p-rbes
+    ============================================================ */
+    body.p-rbes .top-nav { background: #1a0a00; }
+    body.p-rbes .top-nav .brand { font-family: 'Bungee', cursive; color: #ff6b00; font-size: 14px; letter-spacing: 0.08em; margin-right: 20px; }
+    body.p-rbes .top-nav .nav-tab { font-family: 'Bungee', cursive; font-size: 10px; letter-spacing: 0.1em; color: #ffcba4; transition: background 0.15s; }
+    body.p-rbes .top-nav .nav-tab:hover { background: rgba(255,107,0,0.2); }
+    body.p-rbes .top-nav .nav-tab.active { background: #ff6b00; color: #fff; }
+
+    #p-rbes { background: #fff8f4; font-family: 'Courier Prime', monospace; }
+
+    #p-rbes .chat-panel { width: 380px; min-width: 280px; display: flex; flex-direction: column; background: #fff8f4; border-right: 3px dotted #ff6b00; flex-shrink: 0; outline: 3px dotted #cc1100; outline-offset: -10px; }
+    #p-rbes .chat-topbar { padding: 10px 16px; border-bottom: 3px dotted #ff6b00; flex-shrink: 0; }
+    #p-rbes .chat-topbar .room-label { font-size: 9px; font-weight: 700; letter-spacing: 0.14em; color: #cc1100; text-transform: uppercase; font-family: 'Bungee', cursive; }
+    #p-rbes .chat-topbar .room-name { font-size: 12px; font-weight: 700; color: #1a0a00; margin-top: 2px; font-family: 'Courier Prime', monospace; line-height: 1.3; }
+    #p-rbes .chat-messages { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 14px; }
+    #p-rbes .chat-plain-text { font-size: 12px; color: #3a2000; line-height: 1.5; font-style: italic; padding: 6px 0; }
+    #p-rbes .chat-msg { display: flex; gap: 10px; }
+    #p-rbes .chat-msg .avatar { width: 30px; height: 30px; border-radius: 0; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; margin-top: 2px; background: #cc1100; border: 2px dotted #ff6b00; font-family: 'Bungee', cursive; }
+    #p-rbes .chat-msg .msg-body { flex: 1; }
+    #p-rbes .chat-msg .msg-name { font-size: 10px; font-weight: 700; color: #cc1100; letter-spacing: 0.08em; margin-bottom: 4px; font-family: 'Bungee', cursive; }
+    #p-rbes .chat-msg .msg-text { font-size: 12px; color: #2a1000; line-height: 1.5; margin-bottom: 6px; }
+    #p-rbes .doc-card { background: #fff; border: 3px dotted #ff6b00; outline: 3px dotted #cc1100; outline-offset: calc(-1 * (3px + 4px)); padding: 10px 14px; margin-top: 6px; }
+    #p-rbes .doc-card .doc-title { font-size: 11px; font-weight: 700; color: #cc1100; font-family: 'Bungee', cursive; letter-spacing: 0.06em; margin-bottom: 6px; }
+    #p-rbes .doc-card .doc-body { font-size: 11px; color: #3a2000; line-height: 1.5; }
+    #p-rbes .doc-card table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 11px; }
+    #p-rbes .doc-card table th { background: #ff6b00; color: #fff; padding: 4px 8px; text-align: left; font-family: 'Bungee', cursive; font-size: 9px; letter-spacing: 0.08em; }
+    #p-rbes .doc-card table td { padding: 4px 8px; border-bottom: 1px dotted #ff6b00; color: #2a1000; }
+    #p-rbes .chat-composer { padding: 12px 14px; border-top: 3px dotted #ff6b00; flex-shrink: 0; }
+    #p-rbes .chat-composer input { width: 100%; background: #fff; border: 3px dotted #ff6b00; outline: 3px dotted #cc1100; outline-offset: calc(-1 * (3px + 4px)); padding: 8px 12px; font-family: 'Courier Prime', monospace; font-size: 12px; color: #1a0a00; }
+    #p-rbes .chat-composer input:focus { outline: 3px dotted #cc1100; outline-offset: calc(-1 * (3px + 4px)); }
+
+    /* RBES Quest Panel */
+    #p-rbes .quest-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #fff8f4; }
+    #p-rbes .quest-topbar { padding: 10px 20px; border-bottom: 3px dotted #ff6b00; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; background: #fff; }
+    #p-rbes .quest-topbar .back-link { font-size: 11px; font-weight: 700; color: #cc1100; cursor: pointer; font-family: 'Bungee', cursive; }
+    #p-rbes .quest-topbar .quest-title-bar { font-size: 13px; font-weight: 700; color: #1a0a00; flex: 1; margin: 0 14px; font-family: 'Courier Prime', monospace; }
+    #p-rbes .quest-topbar .edit-btn { font-family: 'Bungee', cursive; font-size: 10px; letter-spacing: 0.06em; background: transparent; border: 3px dotted #ff6b00; outline: 2px dotted #cc1100; outline-offset: -5px; color: #cc1100; padding: 4px 12px; cursor: pointer; }
+    #p-rbes .quest-body { flex: 1; overflow-y: auto; padding: 20px 28px; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+    #p-rbes .status-pill { font-size: 10px; font-weight: 700; padding: 3px 12px; border: 2px dotted #ff6b00; background: #fff; color: #cc1100; font-family: 'Bungee', cursive; letter-spacing: 0.08em; }
+    #p-rbes .quest-status-row { width: 100%; max-width: 580px; display: flex; align-items: center; gap: 10px; }
+
+    #p-rbes .sq-card { width: 100%; max-width: 580px; background: #fff; border: 3px dotted #ff6b00; outline: 3px dotted #cc1100; outline-offset: calc(-1 * (3px + 4px)); padding: 16px 18px; }
+    #p-rbes .sq-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+    #p-rbes .sq-num { font-family: 'Bungee', cursive; font-size: 10px; color: #cc1100; letter-spacing: 0.08em; }
+    #p-rbes .sq-id { font-family: 'Bungee', cursive; font-size: 9px; color: #ff6b00; letter-spacing: 0.1em; }
+    #p-rbes .sq-title { font-family: 'Bungee', cursive; font-size: 13px; color: #1a0a00; letter-spacing: 0.04em; margin-bottom: 10px; }
+    #p-rbes .sep { border-top: 3px dotted #ff6b00; box-shadow: 0 7px 0 0 #cc1100; margin: 9px 0; }
+    #p-rbes .step-item { padding: 8px 0; border-bottom: 1px dotted #ff6b00; }
+    #p-rbes .step-id { font-size: 9px; font-family: 'Bungee', cursive; color: #ff6b00; letter-spacing: 0.1em; margin-bottom: 3px; }
+    #p-rbes .step-text { font-size: 12px; color: #2a1000; line-height: 1.4; }
+    #p-rbes .add-step-link { font-size: 11px; color: #cc1100; font-family: 'Bungee', cursive; cursor: pointer; margin-top: 8px; display: inline-block; letter-spacing: 0.06em; }
+    #p-rbes .sq-hamdoc-link { font-size: 11px; color: #ff6b00; cursor: pointer; text-decoration: underline; margin-top: 8px; display: block; }
+
+
+    /* ============================================================
+       CPAS STYLES — scoped to body.p-cpas and #p-cpas
+    ============================================================ */
+    body.p-cpas .top-nav { background: #5b21b6; }
+    body.p-cpas .top-nav .brand { font-family: 'Fredoka One', cursive; color: #fff; font-size: 16px; letter-spacing: 0.06em; margin-right: 20px; }
+    body.p-cpas .top-nav .nav-tab { font-family: 'Fredoka One', cursive; font-size: 12px; letter-spacing: 0.06em; color: #e9d5ff; transition: background 0.15s; }
+    body.p-cpas .top-nav .nav-tab:hover { background: rgba(255,255,255,0.18); }
+    body.p-cpas .top-nav .nav-tab.active { background: #fbbf24; color: #1a1a1a; }
+
+    #p-cpas { background: #fef08a; font-family: 'Bubblegum Sans', cursive; }
+
+    #p-cpas .chat-panel { width: 380px; min-width: 280px; display: flex; flex-direction: column; background: #fef9c3; border-right: 3px solid #a21caf; box-shadow: 5px 0 0 #6b21a8; flex-shrink: 0; }
+    #p-cpas .chat-topbar { padding: 10px 16px; border-bottom: 3px solid #db2777; box-shadow: 0 5px 0 #9d174d; background: #fce7f3; flex-shrink: 0; }
+    #p-cpas .chat-topbar .room-label { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; color: #db2777; text-transform: uppercase; font-family: 'Fredoka One', cursive; }
+    #p-cpas .chat-topbar .room-name { font-size: 14px; font-weight: 700; color: #500724; margin-top: 2px; font-family: 'Fredoka One', cursive; }
+    #p-cpas .chat-subheader { padding: 6px 16px; background: #fb923c; border-bottom: 3px solid #c2410c; box-shadow: 0 3px 0 #9a3412; font-family: 'Fredoka One', cursive; font-size: 12px; color: #fff; flex-shrink: 0; }
+    #p-cpas .chat-messages { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 12px; background: #fef9c3; }
+    #p-cpas .chat-msg { display: flex; gap: 10px; }
+    #p-cpas .chat-msg .avatar { width: 34px; height: 34px; border-radius: 6px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; margin-top: 2px; }
+    #p-cpas .chat-msg .avatar.purple { background: #7c3aed; border: 3px solid #5b21b6; box-shadow: 3px 3px 0 #4c1d95; }
+    #p-cpas .chat-msg .avatar.orange { background: #ea580c; border: 3px solid #c2410c; box-shadow: 3px 3px 0 #9a3412; }
+    #p-cpas .chat-msg .msg-body { flex: 1; }
+    #p-cpas .chat-msg .msg-name { font-size: 11px; font-weight: 700; margin-bottom: 4px; font-family: 'Fredoka One', cursive; }
+    #p-cpas .chat-msg .msg-name.purple { color: #7c3aed; }
+    #p-cpas .chat-msg .msg-name.orange { color: #ea580c; }
+    #p-cpas .chat-msg .msg-text { font-size: 12px; color: #1c1917; line-height: 1.5; background: #fff; border: 3px solid #a21caf; box-shadow: 3px 3px 0 #6b21a8; border-radius: 4px; padding: 8px 10px; }
+    #p-cpas .role-card { background: #ede9fe; border: 3px solid #7c3aed; box-shadow: 5px 5px 0 #4c1d95; padding: 10px 14px; margin-top: 8px; border-radius: 4px; }
+    #p-cpas .role-card .role-card-title { font-family: 'Fredoka One', cursive; font-size: 12px; color: #5b21b6; margin-bottom: 8px; letter-spacing: 0.04em; }
+    #p-cpas .role-card .role-item { font-size: 11px; color: #3730a3; line-height: 1.6; }
+    #p-cpas .role-card .role-item strong { color: #4c1d95; font-family: 'Fredoka One', cursive; }
+    #p-cpas .chat-minibar { padding: 5px 16px; background: #a7f3d0; border-top: 2px solid #059669; font-size: 10px; color: #065f46; font-family: 'Fredoka One', cursive; flex-shrink: 0; }
+    #p-cpas .chat-composer { padding: 10px 14px; border-top: 3px solid #16a34a; box-shadow: inset 0 3px 0 #166534; background: #86efac; flex-shrink: 0; }
+    #p-cpas .chat-composer input { width: 100%; background: #fff; border: 3px solid #16a34a; box-shadow: 3px 3px 0 #166534; padding: 8px 12px; font-family: 'Bubblegum Sans', cursive; font-size: 12px; color: #1a1a1a; border-radius: 4px; }
+
+    /* CPAS Quest Panel */
+    #p-cpas .quest-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #bae6fd; }
+    #p-cpas .quest-topbar { padding: 10px 20px; border-bottom: 3px solid #f97316; box-shadow: 0 5px 0 #c2410c; background: #fed7aa; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    #p-cpas .quest-topbar .quest-section-title { font-family: 'Fredoka One', cursive; font-size: 16px; color: #7c2d12; letter-spacing: 0.04em; }
+    #p-cpas .filter-pill { font-family: 'Fredoka One', cursive; font-size: 11px; background: #7c3aed; color: #fff; border: 3px solid #5b21b6; box-shadow: 3px 3px 0 #4c1d95; padding: 3px 14px; border-radius: 20px; cursor: pointer; }
+    #p-cpas .quest-body { flex: 1; overflow-y: auto; padding: 20px 28px; background: #bae6fd; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+    #p-cpas .quest-card { width: 100%; max-width: 520px; background: #fff; border: 3px solid #0891b2; box-shadow: 5px 5px 0 #0e7490; border-radius: 6px; padding: 20px; }
+    #p-cpas .quest-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    #p-cpas .quest-card-title { font-family: 'Fredoka One', cursive; font-size: 16px; color: #0c4a6e; }
+    #p-cpas .new-badge { font-family: 'Fredoka One', cursive; font-size: 9px; background: #10b981; color: #fff; border: 2px solid #059669; box-shadow: 2px 2px 0 #065f46; padding: 2px 10px; border-radius: 3px; letter-spacing: 0.06em; }
+    #p-cpas .hambits-line { font-size: 12px; color: #0891b2; margin-bottom: 8px; }
+    #p-cpas .quest-desc { font-size: 12px; color: #374151; line-height: 1.5; font-style: italic; margin-bottom: 12px; }
+    #p-cpas .progress-bar-wrap { height: 10px; background: #e5e7eb; border: 2px solid #0891b2; border-radius: 4px; overflow: hidden; margin-bottom: 6px; }
+    #p-cpas .progress-bar-fill { height: 100%; background: #10b981; width: 100%; }
+    #p-cpas .progress-label { font-size: 10px; color: #0891b2; margin-bottom: 12px; font-family: 'Fredoka One', cursive; }
+    #p-cpas .quest-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    #p-cpas .quest-btn { font-family: 'Fredoka One', cursive; font-size: 11px; letter-spacing: 0.04em; padding: 7px 18px; cursor: pointer; border-radius: 4px; }
+    #p-cpas .quest-btn.complete { background: #10b981; color: #fff; border: 3px solid #059669; box-shadow: 3px 3px 0 #065f46; }
+    #p-cpas .quest-btn.delete { background: #fef2f2; color: #dc2626; border: 3px solid #dc2626; box-shadow: 3px 3px 0 #991b1b; }
+    #p-cpas .new-quest-btn { font-family: 'Fredoka One', cursive; font-size: 12px; background: #fbbf24; color: #78350f; border: 3px solid #d97706; box-shadow: 4px 4px 0 #92400e; padding: 10px 24px; cursor: pointer; border-radius: 6px; width: 100%; max-width: 520px; }
+
+
+    /* ============================================================
+       S&MGMT STYLES — scoped to body.p-smgmt and #p-smgmt
+    ============================================================ */
+    body.p-smgmt .top-nav { background: #0a1628; }
+    body.p-smgmt .top-nav .brand { font-family: 'IBM Plex Sans', sans-serif; font-weight: 700; color: #fff; font-size: 14px; letter-spacing: 0.08em; margin-right: 20px; }
+    body.p-smgmt .top-nav .nav-tab { font-family: 'IBM Plex Sans', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: #93c5fd; transition: background 0.15s; }
+    body.p-smgmt .top-nav .nav-tab:hover { background: rgba(37,99,235,0.3); }
+    body.p-smgmt .top-nav .nav-tab.active { background: #2563eb; color: #fff; }
+
+    #p-smgmt { background: #f8fafc; font-family: 'IBM Plex Sans', sans-serif; }
+
+    #p-smgmt .chat-panel { width: 380px; min-width: 280px; display: flex; flex-direction: column; background: #fff; border-right: 1px solid #e2e8f0; flex-shrink: 0; }
+    #p-smgmt .chat-topbar { padding: 10px 16px; border-bottom: 1px solid #e2e8f0; flex-shrink: 0; }
+    #p-smgmt .chat-topbar .room-label { font-size: 9px; font-weight: 600; letter-spacing: 0.14em; color: #2563eb; text-transform: uppercase; }
+    #p-smgmt .chat-topbar .room-name { font-size: 13px; font-weight: 600; color: #0f172a; margin-top: 1px; }
+    #p-smgmt .chat-messages { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+    #p-smgmt .chat-highlight { background: #dbeafe; border-left: 3px solid #2563eb; padding: 8px 12px; font-size: 12px; color: #1e3a8a; font-weight: 500; border-radius: 0 4px 4px 0; }
+    #p-smgmt .chat-msg { display: flex; gap: 10px; }
+    #p-smgmt .chat-msg .avatar { width: 30px; height: 30px; border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; margin-top: 2px; }
+    #p-smgmt .chat-msg .avatar.blue { background: #2563eb; }
+    #p-smgmt .chat-msg .avatar.amber { background: #d97706; }
+    #p-smgmt .chat-msg .msg-body { flex: 1; }
+    #p-smgmt .chat-msg .msg-name { font-size: 11px; font-weight: 600; margin-bottom: 3px; }
+    #p-smgmt .chat-msg .msg-name.blue { color: #2563eb; }
+    #p-smgmt .chat-msg .msg-name.amber { color: #d97706; }
+    #p-smgmt .chat-msg .msg-text { font-size: 12px; color: #1e293b; line-height: 1.5; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 4px; padding: 7px 10px; }
+    #p-smgmt .chat-composer { padding: 10px 14px; border-top: 1px solid #e2e8f0; flex-shrink: 0; display: flex; gap: 8px; align-items: center; }
+    #p-smgmt .chat-composer input { flex: 1; background: #fff; border: 1px solid #cbd5e1; padding: 8px 12px; font-family: 'IBM Plex Sans', sans-serif; font-size: 12px; color: #0f172a; border-radius: 4px; }
+    #p-smgmt .chat-composer input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 2px #dbeafe; }
+    #p-smgmt .composer-btn { font-family: 'IBM Plex Sans', sans-serif; font-size: 11px; font-weight: 600; padding: 7px 14px; background: #2563eb; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+    #p-smgmt .composer-btn.secondary { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+
+    /* S&MGMT HAMDoc Panel */
+    #p-smgmt .hamdoc-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #f8fafc; }
+    #p-smgmt .hamdoc-topbar { padding: 8px 16px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 10px; flex-shrink: 0; background: #fff; }
+    #p-smgmt .back-btn { font-family: 'IBM Plex Sans', sans-serif; font-size: 11px; font-weight: 600; background: #f1f5f9; border: 1px solid #cbd5e1; color: #475569; padding: 5px 12px; border-radius: 4px; cursor: pointer; }
+    #p-smgmt .hamdoc-url { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #64748b; flex: 1; background: #f1f5f9; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 4px; }
+    #p-smgmt .export-btn { font-family: 'IBM Plex Sans', sans-serif; font-size: 11px; font-weight: 600; background: #0a1628; color: #fff; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; }
+    #p-smgmt .copy-btn { font-family: 'IBM Plex Sans', sans-serif; font-size: 11px; font-weight: 500; background: #fff; color: #475569; border: 1px solid #cbd5e1; padding: 5px 12px; border-radius: 4px; cursor: pointer; }
+    #p-smgmt .hamdoc-subheader { padding: 10px 16px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 12px; flex-shrink: 0; background: #fff; }
+    #p-smgmt .hamdoc-subheader h2 { font-size: 14px; font-weight: 700; color: #0f172a; flex: 1; }
+    #p-smgmt .saved-pill { font-size: 10px; font-weight: 600; background: #dcfce7; color: #16a34a; border: 1px solid #86efac; padding: 2px 10px; border-radius: 20px; }
+    #p-smgmt .hamdoc-body { flex: 1; overflow: hidden; display: flex; }
+    #p-smgmt .pages-sidebar { width: 160px; border-right: 1px solid #e2e8f0; background: #fff; display: flex; flex-direction: column; flex-shrink: 0; padding: 14px 0; }
+    #p-smgmt .pages-sidebar .pages-header { font-size: 9px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #64748b; padding: 0 14px 8px; border-bottom: 1px solid #e2e8f0; margin-bottom: 6px; }
+    #p-smgmt .page-item { padding: 7px 14px; font-size: 12px; color: #374151; cursor: pointer; border-left: 3px solid transparent; }
+    #p-smgmt .page-item.active { border-left-color: #2563eb; background: #eff6ff; color: #1d4ed8; font-weight: 600; }
+    #p-smgmt .page-item:hover { background: #f8fafc; }
+    #p-smgmt .add-page { padding: 7px 14px; font-size: 12px; color: #2563eb; cursor: pointer; margin-top: 4px; }
+    #p-smgmt .editor-area { flex: 1; overflow-y: auto; padding: 20px 28px; }
+    #p-smgmt .editor-title-input { width: 100%; border: none; font-family: 'IBM Plex Sans', sans-serif; font-size: 22px; font-weight: 700; color: #0f172a; background: transparent; outline: none; margin-bottom: 16px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+    #p-smgmt .format-toolbar { display: flex; align-items: center; gap: 6px; padding: 8px 0; border-bottom: 1px solid #e2e8f0; margin-bottom: 16px; flex-wrap: wrap; }
+    #p-smgmt .format-toolbar select { font-family: 'IBM Plex Sans', sans-serif; font-size: 11px; border: 1px solid #cbd5e1; padding: 4px 6px; border-radius: 3px; color: #374151; background: #fff; }
+    #p-smgmt .format-toolbar .fmt-btn { font-family: 'IBM Plex Sans', sans-serif; font-size: 12px; font-weight: 700; background: #fff; border: 1px solid #cbd5e1; color: #374151; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 3px; cursor: pointer; }
+    #p-smgmt .fmt-swatch { width: 22px; height: 22px; border-radius: 3px; border: 2px solid #94a3b8; cursor: pointer; }
+    #p-smgmt .doc-content { font-size: 13px; color: #1e293b; line-height: 1.7; }
+    #p-smgmt .doc-content strong { color: #0f172a; }
+    #p-smgmt .doc-content p { margin-bottom: 12px; }
+
+
+    /* ============================================================
+       SASS STYLES — scoped to body.p-sass and #p-sass
+    ============================================================ */
+    body.p-sass .top-nav { background: linear-gradient(180deg, #2a3440 0%, #1a2430 100%); border-bottom: 2px solid #4a5a6a; }
+    body.p-sass .top-nav .brand { font-family: 'Orbitron', monospace; font-weight: 800; color: #00e5ff; font-size: 13px; letter-spacing: 0.14em; margin-right: 20px; text-shadow: 0 0 8px rgba(0,229,255,0.6); }
+    body.p-sass .top-nav .nav-tab { font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 600; letter-spacing: 0.12em; color: #8a9aaa; transition: all 0.15s; }
+    body.p-sass .top-nav .nav-tab:hover { background: rgba(0,229,255,0.1); color: #00e5ff; }
+    body.p-sass .top-nav .nav-tab.active { background: rgba(0,229,255,0.15); color: #00e5ff; border-bottom: 2px solid #00e5ff; }
+
+    #p-sass { background: #d0d8e0; font-family: 'Exo 2', sans-serif; }
+
+    /* SASS scanline overlay via body::after only when sass active */
+    body.p-sass::after { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 9999; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px); }
+
+    /* SASS bevel mixin as utility */
+    #p-sass .bevel { border: 3px solid #c8d0d8; box-shadow: inset 1px 1px 0 rgba(255,255,255,0.6), inset -1px -1px 0 rgba(26,32,36,0.6), 3px 3px 0 #6a7880, -1px -1px 0 #e8edf2; border-radius: 2px; }
+
+    #p-sass .chat-panel { width: 400px; min-width: 280px; display: flex; flex-direction: column; background: linear-gradient(180deg, #c8d4dc 0%, #bcc8d0 100%); border-right: 3px solid #c8d0d8; box-shadow: inset 1px 1px 0 rgba(255,255,255,0.6), inset -1px -1px 0 rgba(26,32,36,0.6), 3px 0 0 #6a7880; flex-shrink: 0; }
+    #p-sass .chat-topbar { padding: 10px 16px; border-bottom: 3px solid #c8d0d8; box-shadow: 0 3px 0 #6a7880; background: linear-gradient(180deg, #d8e4ec 0%, #c8d4dc 100%); flex-shrink: 0; }
+    #p-sass .chat-topbar .room-label { font-family: 'Orbitron', monospace; font-size: 8px; font-weight: 700; letter-spacing: 0.16em; color: #00e5ff; text-transform: uppercase; text-shadow: 0 0 6px rgba(0,229,255,0.5); }
+    #p-sass .chat-topbar .room-name { font-size: 12px; font-weight: 600; color: #1a2430; margin-top: 2px; letter-spacing: 0.02em; }
+    #p-sass .chat-messages { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+    #p-sass .chat-msg { display: flex; gap: 10px; }
+    #p-sass .chat-msg .avatar { width: 32px; height: 32px; border-radius: 2px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; margin-top: 2px; border: 2px solid #c8d0d8; box-shadow: inset 1px 1px 0 rgba(255,255,255,0.4), 2px 2px 0 #4a5a6a; }
+    #p-sass .chat-msg .avatar.cyan { background: linear-gradient(135deg, #0891b2, #0e7490); color: #00e5ff; text-shadow: 0 0 4px rgba(0,229,255,0.8); }
+    #p-sass .chat-msg .avatar.amber { background: linear-gradient(135deg, #d97706, #b45309); }
+    #p-sass .chat-msg .msg-body { flex: 1; }
+    #p-sass .chat-msg .msg-name { font-size: 10px; font-weight: 700; margin-bottom: 4px; letter-spacing: 0.06em; }
+    #p-sass .chat-msg .msg-name.cyan { color: #00e5ff; text-shadow: 0 0 4px rgba(0,229,255,0.6); }
+    #p-sass .chat-msg .msg-name.amber { color: #f59e0b; }
+    #p-sass .chat-msg .msg-text { font-size: 12px; color: #1a2430; line-height: 1.5; background: linear-gradient(180deg, #dce8f0, #ccd8e0); border: 3px solid #c8d0d8; box-shadow: inset 1px 1px 0 rgba(255,255,255,0.6), inset -1px -1px 0 rgba(26,32,36,0.3), 2px 2px 0 #6a7880; border-radius: 2px; padding: 8px 10px; }
+    #p-sass .embed-card { margin-top: 8px; background: linear-gradient(180deg, #d4e0e8, #c4d0d8); border: 3px solid #c8d0d8; box-shadow: inset 1px 1px 0 rgba(255,255,255,0.6), inset -1px -1px 0 rgba(26,32,36,0.4), 3px 3px 0 #6a7880; border-radius: 2px; padding: 10px 14px; }
+    #p-sass .embed-card .embed-title { font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; color: #00e5ff; letter-spacing: 0.12em; text-shadow: 0 0 6px rgba(0,229,255,0.5); margin-bottom: 8px; }
+    #p-sass .embed-card .embed-body { font-size: 11px; color: #1a2430; line-height: 1.5; }
+    #p-sass .embed-card .embed-body .role-line { padding: 3px 0; border-bottom: 1px solid rgba(200,208,216,0.6); }
+    #p-sass .embed-card .embed-body .role-line strong { color: #0e7490; }
+    /* screenshot card inside SASS chat */
+    #p-sass .screenshot-card { margin-top: 8px; background: #1a2430; border: 3px solid #c8d0d8; box-shadow: inset 1px 1px 0 rgba(255,255,255,0.1), 3px 3px 0 #6a7880; border-radius: 2px; padding: 8px 10px; }
+    #p-sass .screenshot-card .sc-label { font-family: 'Orbitron', monospace; font-size: 8px; color: #00e5ff; letter-spacing: 0.1em; margin-bottom: 6px; text-shadow: 0 0 6px rgba(0,229,255,0.6); }
+    #p-sass .screenshot-card .sc-mock { background: #0d1a24; border: 1px solid #2a3a4a; border-radius: 2px; padding: 8px; font-size: 10px; color: #6a9ab0; font-family: 'IBM Plex Mono', monospace; }
+    #p-sass .screenshot-card .sc-mock .sc-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+    #p-sass .screenshot-card .sc-mock .sc-tag { color: #00e5ff; font-size: 9px; }
+
+    #p-sass .chat-composer { padding: 10px 14px; border-top: 3px solid #c8d0d8; box-shadow: inset 0 3px 0 rgba(255,255,255,0.4), 0 -2px 0 #6a7880; background: linear-gradient(180deg, #c8d4dc, #b8c4cc); flex-shrink: 0; }
+    #p-sass .chat-composer input { width: 100%; background: linear-gradient(180deg, #dce8f0, #ccd8e0); border: 3px solid #c8d0d8; box-shadow: inset 1px 1px 0 rgba(255,255,255,0.6), inset -1px -1px 0 rgba(26,32,36,0.3); padding: 8px 12px; font-family: 'Exo 2', sans-serif; font-size: 12px; color: #1a2430; border-radius: 2px; }
+
+    /* SASS Quest Panel */
+    #p-sass .quest-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: linear-gradient(180deg, #c0ccda 0%, #b0bcca 100%); }
+    #p-sass .quest-topbar { padding: 10px 20px; border-bottom: 3px solid #c8d0d8; box-shadow: 0 3px 0 #6a7880; background: linear-gradient(180deg, #d0dce4, #c0ccda); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    #p-sass .quest-topbar .quest-section-label { font-family: 'Orbitron', monospace; font-size: 10px; font-weight: 700; color: #00e5ff; letter-spacing: 0.14em; text-transform: uppercase; text-shadow: 0 0 6px rgba(0,229,255,0.5); }
+    #p-sass .quest-body { flex: 1; overflow-y: auto; padding: 0; display: flex; flex-direction: column; }
+    #p-sass .quest-row { padding: 18px 24px; border-bottom: 3px solid #c8d0d8; box-shadow: 0 3px 0 #6a7880; display: flex; flex-direction: column; gap: 8px; }
+    #p-sass .quest-row-header { display: flex; align-items: center; gap: 10px; }
+    #p-sass .quest-row-title { font-family: 'Orbitron', monospace; font-size: 11px; font-weight: 700; color: #1a2430; letter-spacing: 0.04em; flex: 1; }
+    #p-sass .new-badge { font-family: 'Orbitron', monospace; font-size: 8px; font-weight: 700; background: #0e7490; color: #00e5ff; border: 2px solid #00e5ff; padding: 2px 8px; border-radius: 2px; letter-spacing: 0.1em; text-shadow: 0 0 4px rgba(0,229,255,0.6); box-shadow: 0 0 6px rgba(0,229,255,0.2); }
+    #p-sass .hambits-line { font-size: 11px; color: #3a5a6a; font-weight: 600; letter-spacing: 0.04em; }
+    #p-sass .quest-desc-text { font-size: 11px; color: #2a3a4a; line-height: 1.5; }
+    #p-sass .quest-progress-bar-wrap { height: 8px; background: #8090a0; border: 2px solid #c8d0d8; box-shadow: inset 1px 1px 0 rgba(26,32,36,0.4); border-radius: 1px; overflow: hidden; }
+    #p-sass .quest-progress-fill { height: 100%; background: linear-gradient(90deg, #00e5ff, #0891b2); }
+    #p-sass .quest-progress-label { font-size: 10px; color: #3a5a6a; }
+    #p-sass .quest-row-controls { display: flex; align-items: center; gap: 8px; }
+    #p-sass .arrow-btn { font-size: 14px; background: linear-gradient(180deg, #d4e0e8, #c4d0d8); border: 2px solid #c8d0d8; box-shadow: inset 1px 1px 0 rgba(255,255,255,0.5), 2px 2px 0 #6a7880; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 2px; color: #1a2430; }
+    #p-sass .quest-btn { font-family: 'Exo 2', sans-serif; font-size: 11px; font-weight: 600; padding: 5px 14px; border-radius: 2px; cursor: pointer; border: 2px solid #c8d0d8; box-shadow: inset 1px 1px 0 rgba(255,255,255,0.5), 2px 2px 0 #6a7880; letter-spacing: 0.04em; }
+    #p-sass .quest-btn.complete { background: linear-gradient(180deg, #10b981, #059669); color: #fff; border-color: #34d399; }
+    #p-sass .quest-btn.delete { background: linear-gradient(180deg, #ef4444, #dc2626); color: #fff; border-color: #f87171; }
+
+  </style>
+</head>
+<body class="p-itth">
+
+  <!-- ===== SHARED TOP NAV ===== -->
+  <nav class="top-nav">
+    <div class="brand">HAMQUEST</div>
+    <div class="nav-tabs">
+      <button class="nav-tab" data-page="itth">ITTH</button>
+      <button class="nav-tab" data-page="rbes">RBES</button>
+      <button class="nav-tab" data-page="cpas">CPAS</button>
+      <button class="nav-tab" data-page="smgmt">S&amp;MGMT</button>
+      <button class="nav-tab" data-page="sass">SASS</button>
+    </div>
+  </nav>
+
+
+  <!-- ============================================================
+       ITTH PAGE
+  ============================================================ -->
+  <div id="p-itth" class="page">
+    <div class="main">
+
+      <!-- ITTH Chat Panel -->
+      <div class="chat-panel">
+        <div class="chat-topbar">
+          <div class="room-label">Room</div>
+          <div class="room-name">ITTH</div>
+        </div>
+        <div class="chat-messages">
+          <div class="chat-msg">
+            <div class="avatar green">J</div>
+            <div class="msg-body">
+              <div class="msg-name green">JOBbb</div>
+              <div class="msg-text">Hey, I've been working on the season zero docs. Think we can get them visualized by end of sprint?</div>
+            </div>
+          </div>
+          <div class="chat-msg">
+            <div class="avatar purple">O</div>
+            <div class="msg-body">
+              <div class="msg-name purple">OTHER_USER</div>
+              <div class="msg-text">Definitely. I already started on the storyboard for episode one. Should be ready to review tomorrow.</div>
+            </div>
+          </div>
+          <div class="chat-msg">
+            <div class="avatar green">J</div>
+            <div class="msg-body">
+              <div class="msg-name green">JOBbb</div>
+              <div class="msg-text">Perfect. I'll create the HAMDoc for season zero planning so we have a central reference point. Can you add the visual assets there when they're done?</div>
+            </div>
+          </div>
+          <div class="chat-msg">
+            <div class="avatar purple">O</div>
+            <div class="msg-body">
+              <div class="msg-name purple">OTHER_USER</div>
+              <div class="msg-text">Will do! Also I noticed the quest is still showing "In Progress" — should we update the subquests status first before marking it complete?</div>
+            </div>
+          </div>
+          <div class="chat-msg">
+            <div class="avatar green">J</div>
+            <div class="msg-body">
+              <div class="msg-name green">JOBbb</div>
+              <div class="msg-text">Yeah let's finish both subquests first. The season one piece still needs some work — the enactment plan isn't fully scoped yet.</div>
+            </div>
+          </div>
+          <div class="chat-msg">
+            <div class="avatar purple">O</div>
+            <div class="msg-body">
+              <div class="msg-name purple">OTHER_USER</div>
+              <div class="msg-text">Agreed. I'll ping @JOBbb once I have the first draft ready for review. Shouldn't take more than a day or two.</div>
+            </div>
+          </div>
+        </div>
+        <div class="chat-composer">
+          <div class="composer-wrap">
+            <input type="text" placeholder="Send a message…" />
+          </div>
+        </div>
+      </div>
+
+      <!-- ITTH Quest Panel -->
+      <div class="quest-panel">
+        <div class="quest-topbar">
+          <div class="back-link">← Back to Quests</div>
+          <div class="quest-title-bar">Visualize and Enact Seasons Zero and One</div>
+          <button class="edit-btn">EDIT</button>
+        </div>
+        <div class="quest-body">
+          <div class="quest-status-row">
+            <span class="status-pill in-progress">In Progress</span>
+          </div>
+
+          <div class="quest-card">
+            <div class="quest-card-title">Visualize and Enact Seasons Zero and One</div>
+            <div class="quest-card-desc">
+              This quest covers the full visualization and enactment pipeline for both season zero and season one of ITTH. Deliverables include storyboards, scene documentation, character briefs, and a finalized production plan ready for execution. All assets should be compiled into the associated HAMDoc for team reference and stakeholder review.
+            </div>
+            <div class="quest-card-assignee">Assignee: <span>JOBbb</span></div>
+            <a class="hamdoc-link">+ Create HAMDoc</a>
+            <div class="grad-divider"></div>
+            <div class="quest-actions">
+              <button class="quest-btn complete">MARK COMPLETE</button>
+              <button class="quest-btn delete">DELETE QUEST</button>
+              <button class="quest-btn assignees">EDIT ASSIGNEES</button>
+            </div>
+          </div>
+
+          <div class="subquests-section">
+            <div class="subquests-label">Subquests</div>
+
+            <div class="subquest-card">
+              <div class="sq-label">Subquest 1</div>
+              <div class="sq-title">Visualize Season Zero</div>
+              <div class="sq-body">
+                Create a complete visual representation of season zero including storyboards, scene layouts, and character position maps. Reference the existing <span class="at-tag">@season-zero-doc</span> and coordinate with <span class="at-tag">@OTHER_USER</span> on asset delivery. Final output should be presentable to <span class="at-tag">@stakeholders</span> by end of sprint.
+              </div>
+            </div>
+
+            <div class="subquest-card">
+              <div class="sq-label">Subquest 2</div>
+              <div class="sq-title">Enact Season One Production Plan</div>
+              <div class="sq-body">
+                Develop and finalize the production plan for season one enactment. This includes episode breakdowns, role assignments, and a shooting or recording schedule. Coordinate with <span class="at-tag">@JOBbb</span> and <span class="at-tag">@OTHER_USER</span> to ensure all steps are tracked in the HAMQuest system before sign-off.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       RBES PAGE
+  ============================================================ -->
+  <div id="p-rbes" class="page">
+    <div class="main">
+
+      <!-- RBES Chat Panel -->
+      <div class="chat-panel">
+        <div class="chat-topbar">
+          <div class="room-label">Room</div>
+          <div class="room-name">Rulebreakers English Studios JOB — RBES EUROPE CEO Room</div>
+        </div>
+        <div class="chat-messages">
+          <div class="chat-plain-text">
+            The following documents have been shared in preparation for the Q3 enrollment push. Please review the pricing structure and contest brief before the Monday sync.
+          </div>
+
+          <div class="chat-msg">
+            <div class="avatar">R</div>
+            <div class="msg-body">
+              <div class="msg-name">RBES Global CEO</div>
+              <div class="msg-text">I've drafted the initial enrollment targets. We need 10 paying students by end of quarter at the $1000/month tier. Here's the breakdown:</div>
+              <div class="doc-card">
+                <div class="doc-title">Enrollment Target Document</div>
+                <div class="doc-body">
+                  <table>
+                    <thead>
+                      <tr><th>Channel</th><th>Target</th><th>Status</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr><td>Direct Outreach</td><td>4 students</td><td>In Progress</td></tr>
+                      <tr><td>Contest Pipeline</td><td>3 students</td><td>Planning</td></tr>
+                      <tr><td>Referrals</td><td>3 students</td><td>Not Started</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-msg">
+            <div class="avatar">R</div>
+            <div class="msg-body">
+              <div class="msg-name">RBES Global CEO</div>
+              <div class="msg-text">Here's the institution establishment framework we'll be working from for SQ-02:</div>
+              <div class="doc-card">
+                <div class="doc-title">Institution Establishment Framework</div>
+                <div class="doc-body">
+                  Phase 1: Register legal entity and open operational accounts. Phase 2: Establish curriculum framework and teacher onboarding protocol. Phase 3: Launch initial student intake process with standardized assessment tools. All phases must be completed before the contest window opens.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-msg">
+            <div class="avatar">R</div>
+            <div class="msg-body">
+              <div class="msg-name">RBES Global CEO</div>
+              <div class="msg-text">And the contest brief for SQ-03 is ready for review:</div>
+              <div class="doc-card">
+                <div class="doc-title">Contest Brief — RBES Europe Launch Contest</div>
+                <div class="doc-body">
+                  The contest will run for 6 weeks and target English learners aged 18–35 across the EU. Prizes include free tuition for 3 months plus RBES certification. Winners will be announced at the virtual launch event. The contest is the primary student acquisition vehicle for Q3.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="chat-composer">
+          <input type="text" placeholder="Type a message…" />
+        </div>
+      </div>
+
+      <!-- RBES Quest Panel -->
+      <div class="quest-panel">
+        <div class="quest-topbar">
+          <div class="back-link">← QUESTS</div>
+          <div class="quest-title-bar">Enroll 10 Paying Students at ~$1000 per month</div>
+          <button class="edit-btn">EDIT</button>
+        </div>
+        <div class="quest-body">
+          <div class="quest-status-row">
+            <span class="status-pill">New</span>
+          </div>
+
+          <div class="sq-card">
+            <div class="sq-header">
+              <span class="sq-num">SUBQUEST 2</span>
+              <span class="sq-id">SQ-02</span>
+            </div>
+            <div class="sq-title">Establish the Institution</div>
+            <div class="sep"></div>
+            <div class="step-item">
+              <div class="step-id">SQ-02.1</div>
+              <div class="step-text">Register the legal entity and open all required operational bank accounts and administrative accounts for RBES Europe.</div>
+            </div>
+            <div class="step-item">
+              <div class="step-id">SQ-02.2</div>
+              <div class="step-text">Develop the curriculum framework including course structure, learning outcomes, and teacher onboarding protocol documentation.</div>
+            </div>
+            <div class="step-item">
+              <div class="step-id">SQ-02.3</div>
+              <div class="step-text">Launch the initial student intake process with standardized assessment tools and enrollment confirmation workflow in place.</div>
+            </div>
+            <a class="add-step-link">+ Add step</a>
+            <a class="sq-hamdoc-link">View HAMDoc: RBES Institution Setup Guide</a>
+          </div>
+
+          <div class="sq-card">
+            <div class="sq-header">
+              <span class="sq-num">SUBQUEST 3</span>
+              <span class="sq-id">SQ-03</span>
+            </div>
+            <div class="sq-title">Start The Contest and Fill Pipeline</div>
+            <div class="sep"></div>
+            <div class="step-item">
+              <div class="step-id">SQ-03.1</div>
+              <div class="step-text">Finalize and publish the contest brief including prize structure, eligibility criteria, and application portal. Coordinate launch event logistics.</div>
+            </div>
+            <div class="step-item">
+              <div class="step-id">SQ-03.2</div>
+              <div class="step-text">Run the 6-week contest promotion campaign across social channels and EU education networks. Track applicant pipeline weekly and report progress to RBES Global CEO.</div>
+            </div>
+            <a class="add-step-link">+ Add step</a>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       CPAS PAGE
+  ============================================================ -->
+  <div id="p-cpas" class="page">
+    <div class="main">
+
+      <!-- CPAS Chat Panel -->
+      <div class="chat-panel">
+        <div class="chat-topbar">
+          <div class="room-label">Room</div>
+          <div class="room-name">CPAS Clownli Room</div>
+        </div>
+        <div class="chat-subheader">Active Members: Clownli, Clownjamin</div>
+        <div class="chat-messages">
+          <div class="chat-msg">
+            <div class="avatar purple">CL</div>
+            <div class="msg-body">
+              <div class="msg-name purple">Clownli</div>
+              <div class="msg-text">Hey Clownjamin! I've been thinking about how we assign board roles. I put together a quick breakdown of who does what — let me know if this matches your understanding.</div>
+              <div class="role-card">
+                <div class="role-card-title">CPAS Board Role Assignments</div>
+                <div class="role-item"><strong>Chairclown:</strong> Clownli — facilitates all sessions, final say on quorum calls</div>
+                <div class="role-item"><strong>Treasurer Clown:</strong> Clownjamin — manages HAMbits budget and disbursements</div>
+                <div class="role-item"><strong>Secretary Clown:</strong> Open — records meeting minutes and maintains HAMDocs</div>
+                <div class="role-item"><strong>Quorum Officer:</strong> Clownli (interim) — verifies casting of each quorum role</div>
+                <div class="role-item"><strong>Outreach Clown:</strong> Clownjamin — handles external partnerships and new member onboarding</div>
+              </div>
+            </div>
+          </div>
+          <div class="chat-msg">
+            <div class="avatar orange">CJ</div>
+            <div class="msg-body">
+              <div class="msg-name orange">Clownjamin</div>
+              <div class="msg-text">This looks great! I'm happy with the Treasurer role. Should we start the quest to actually cast all the quorum roles officially? We need at least 2/2 steps done to mark it complete.</div>
+            </div>
+          </div>
+          <div class="chat-msg">
+            <div class="avatar purple">CL</div>
+            <div class="msg-body">
+              <div class="msg-name purple">Clownli</div>
+              <div class="msg-text">Yes! I already created the quest in the system. It's called "Cast A Quorum Of the Roles" — check the panel on the right. Worth 10 HAMbits and we're already at 2/2 steps so we can mark it complete whenever you're ready!</div>
+            </div>
+          </div>
+          <div class="chat-msg">
+            <div class="avatar orange">CJ</div>
+            <div class="msg-body">
+              <div class="msg-name orange">Clownjamin</div>
+              <div class="msg-text">Excellent! Let's do it. Mark it complete and then we should create the next quest for onboarding new clown members to the board.</div>
+            </div>
+          </div>
+        </div>
+        <div class="chat-minibar">✦ CPAS Live Session — Quest mode active</div>
+        <div class="chat-composer">
+          <input type="text" placeholder="Type something clownish…" />
+        </div>
+      </div>
+
+      <!-- CPAS Quest Panel -->
+      <div class="quest-panel">
+        <div class="quest-topbar">
+          <div class="quest-section-title">My HAMQuests</div>
+          <span class="filter-pill">Clownli</span>
+        </div>
+        <div class="quest-body">
+
+          <div class="quest-card">
+            <div class="quest-card-header">
+              <div class="quest-card-title">Cast A Quorum Of the Roles</div>
+              <span class="new-badge">NEW</span>
+            </div>
+            <div class="hambits-line">⭐ 10 HAMbits</div>
+            <div class="quest-desc">Officially cast every required quorum role within the CPAS board structure. Each role must be formally accepted by its assignee before the quest can be marked complete.</div>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-fill"></div>
+            </div>
+            <div class="progress-label">2/2 Steps Complete</div>
+            <div class="quest-actions">
+              <button class="quest-btn complete">COMPLETE</button>
+              <button class="quest-btn delete">DELETE</button>
+            </div>
+          </div>
+
+          <button class="new-quest-btn">+ New Quest</button>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       S&MGMT PAGE
+  ============================================================ -->
+  <div id="p-smgmt" class="page">
+    <div class="main">
+
+      <!-- S&MGMT Chat Panel -->
+      <div class="chat-panel">
+        <div class="chat-topbar">
+          <div class="room-label">Room</div>
+          <div class="room-name">S&amp;MGMT Qiaoli (Manager) Room</div>
+        </div>
+        <div class="chat-messages">
+          <div class="chat-highlight">
+            📌 Pinned: This room is for Strategy &amp; Management coordination between Qiaoli and Benjamin. All HAMDocs should be linked here for visibility.
+          </div>
+          <div class="chat-msg">
+            <div class="avatar blue">QM</div>
+            <div class="msg-body">
+              <div class="msg-name blue">Qiaoli Manager</div>
+              <div class="msg-text">Benjamin, I've set up the HAMDoc for the $200k target. It's linked to your main quest. Please review the revenue breakdown section I've drafted.</div>
+            </div>
+          </div>
+          <div class="chat-msg">
+            <div class="avatar amber">BC</div>
+            <div class="msg-body">
+              <div class="msg-name amber">Benjamin Client</div>
+              <div class="msg-text">Got it! I'll look it over today. Should we include the recurring revenue projections or just the one-time transactions?</div>
+            </div>
+          </div>
+          <div class="chat-msg">
+            <div class="avatar blue">QM</div>
+            <div class="msg-body">
+              <div class="msg-name blue">Qiaoli Manager</div>
+              <div class="msg-text">Include both. I want the full picture. Separate them into distinct sections so stakeholders can evaluate each stream independently.</div>
+            </div>
+          </div>
+          <div class="chat-msg">
+            <div class="avatar amber">BC</div>
+            <div class="msg-body">
+              <div class="msg-name amber">Benjamin Client</div>
+              <div class="msg-text">Makes sense. I'll also add a notes section at the bottom for assumptions and risk factors. That way everything is transparent.</div>
+            </div>
+          </div>
+          <div class="chat-msg">
+            <div class="avatar blue">QM</div>
+            <div class="msg-body">
+              <div class="msg-name blue">Qiaoli Manager</div>
+              <div class="msg-text">Perfect. Once the doc is finalized, export it as PDF and share the link in this room. I'll send it to the broader team from here.</div>
+            </div>
+          </div>
+          <div class="chat-msg">
+            <div class="avatar amber">BC</div>
+            <div class="msg-body">
+              <div class="msg-name amber">Benjamin Client</div>
+              <div class="msg-text">Will do. ETA is end of day tomorrow. I'll ping you when it's ready for final review.</div>
+            </div>
+          </div>
+          <div class="chat-msg">
+            <div class="avatar blue">QM</div>
+            <div class="msg-body">
+              <div class="msg-name blue">Qiaoli Manager</div>
+              <div class="msg-text">Great. Also, let's make sure the formatting is clean — use the IBM Plex formatting tools in the editor so it looks professional.</div>
+            </div>
+          </div>
+          <div class="chat-msg">
+            <div class="avatar amber">BC</div>
+            <div class="msg-body">
+              <div class="msg-name amber">Benjamin Client</div>
+              <div class="msg-text">Absolutely. I'll make it look polished. Thanks for setting this all up, Qiaoli — this system is really helping me stay on track.</div>
+            </div>
+          </div>
+        </div>
+        <div class="chat-composer">
+          <button class="composer-btn secondary">IMAGE</button>
+          <input type="text" placeholder="Message Qiaoli Manager…" />
+          <button class="composer-btn">SEND</button>
+        </div>
+      </div>
+
+      <!-- S&MGMT HAMDoc Panel -->
+      <div class="hamdoc-panel">
+        <div class="hamdoc-topbar">
+          <button class="back-btn">← HAMQUEST</button>
+          <div class="hamdoc-url">hamquest.app/docs/smgmt/make-200k-benjamin</div>
+          <button class="export-btn">EXPORT PDF</button>
+          <button class="copy-btn">COPY LINK</button>
+        </div>
+        <div class="hamdoc-subheader">
+          <h2>HAMDoc — Make $200,000 for Benjamin</h2>
+          <span class="saved-pill">Saved</span>
+        </div>
+        <div class="hamdoc-body">
+          <div class="pages-sidebar">
+            <div class="pages-header">Pages</div>
+            <div class="page-item active">Overview</div>
+            <div class="page-item">Revenue Breakdown</div>
+            <div class="page-item">Risk &amp; Assumptions</div>
+            <div class="add-page">+ Add page</div>
+          </div>
+          <div class="editor-area">
+            <input class="editor-title-input" type="text" value="Make $200,000 for Benjamin" />
+            <div class="format-toolbar">
+              <select><option>Style</option><option>Heading 1</option><option>Heading 2</option><option>Body</option></select>
+              <select><option>Size</option><option>12</option><option>14</option><option>16</option><option>18</option></select>
+              <button class="fmt-btn">B</button>
+              <button class="fmt-btn" style="font-style:italic;">I</button>
+              <button class="fmt-btn" style="text-decoration:underline;">U</button>
+              <button class="fmt-btn">A</button>
+              <div class="fmt-swatch" style="background:#0f172a;"></div>
+              <div class="fmt-swatch" style="background:#2563eb;"></div>
+            </div>
+            <div class="doc-content">
+              <p><strong>Objective:</strong> Generate $200,000 in verified revenue attributable to Benjamin's client portfolio by end of the fiscal year. This HAMDoc tracks all strategy, progress, and decision rationale related to this goal.</p>
+              <p><strong>Revenue Streams:</strong> Two primary channels are being targeted — direct client contracts and recurring service retainers. Each stream will be documented separately to allow independent assessment by Qiaoli and other stakeholders.</p>
+              <p><strong>Direct Contracts:</strong> Benjamin will close a minimum of four client contracts at an average value of $35,000 each. Target sectors include professional services, technology consulting, and creative production. Outreach cadence is bi-weekly with a 30-day close cycle.</p>
+              <p><strong>Recurring Retainers:</strong> A monthly retainer program targeting $5,000–$10,000 per client will supplement direct contracts. Benjamin is managing three active retainer prospects as of this writing, with a target of five confirmed retainers by Q3.</p>
+              <p><strong>Next Steps:</strong> Finalize the revenue projection spreadsheet, complete risk assessment on page 3, and schedule the mid-quarter review with Qiaoli Manager. All updates should be logged here with timestamps for accountability.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       SASS PAGE
+  ============================================================ -->
+  <div id="p-sass" class="page">
+    <div class="main">
+
+      <!-- SASS Chat Panel -->
+      <div class="chat-panel">
+        <div class="chat-topbar">
+          <div class="room-label">Room</div>
+          <div class="room-name">SASS Qiaoli (Partner, Design Lead) Room</div>
+        </div>
+        <div class="chat-messages">
+          <div class="chat-msg">
+            <div class="avatar cyan">BG</div>
+            <div class="msg-body">
+              <div class="msg-name cyan">Benjamin General Partner</div>
+              <div class="msg-text">Qiaoli, I've been putting together the visual mockup for the Ninman Intersection proposal. Here's a screenshot of the HAMQuest UI layout I referenced for the arcology section:</div>
+              <div class="screenshot-card">
+                <div class="sc-label">HAMQUEST UI MOCKUP — NINMAN ARCOLOGY</div>
+                <div class="sc-mock">
+                  <div class="sc-row"><span class="sc-tag">QUEST</span><span>Release &amp; Activate Proposal</span></div>
+                  <div class="sc-row"><span class="sc-tag">STATUS</span><span>NEW</span></div>
+                  <div class="sc-row"><span class="sc-tag">HAMbits</span><span>10000</span></div>
+                  <div class="sc-row"><span class="sc-tag">ASSIGN</span><span>Benjamin GP / Thitikorn TL</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="chat-msg">
+            <div class="avatar amber">TT</div>
+            <div class="msg-body">
+              <div class="msg-name amber">Thitikorn Tech Lead</div>
+              <div class="msg-text">Nice — looks solid. I also mapped out the superstudio casting roles we'll need for the Cast The Superstudio quest. Here's the role list:</div>
+              <div class="embed-card">
+                <div class="embed-title">SUPERSTUDIO ROLE LIST</div>
+                <div class="embed-body">
+                  <div class="role-line"><strong>Creative Director:</strong> Benjamin General Partner</div>
+                  <div class="role-line"><strong>Tech Lead:</strong> Thitikorn Tech Lead</div>
+                  <div class="role-line"><strong>Design Lead:</strong> Qiaoli Partner</div>
+                  <div class="role-line"><strong>Community Liaison:</strong> Open — to be cast</div>
+                  <div class="role-line"><strong>Documentation Lead:</strong> Open — to be cast</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="chat-msg">
+            <div class="avatar cyan">BG</div>
+            <div class="msg-body">
+              <div class="msg-name cyan">Benjamin General Partner</div>
+              <div class="msg-text">Perfect. We should get a patron confirmed before we finalize the superstudio cast — the funding affects which roles we can fill. Let's prioritize the "Find Patron" quest first in the order.</div>
+            </div>
+          </div>
+          <div class="chat-msg">
+            <div class="avatar amber">TT</div>
+            <div class="msg-body">
+              <div class="msg-name amber">Thitikorn Tech Lead</div>
+              <div class="msg-text">Agreed. I'll reorder the quests accordingly. The Ninman proposal activation should stay top priority since it gates everything else downstream.</div>
+            </div>
+          </div>
+        </div>
+        <div class="chat-composer">
+          <input type="text" placeholder="Transmit message…" />
+        </div>
+      </div>
+
+      <!-- SASS Quest Panel -->
+      <div class="quest-panel">
+        <div class="quest-topbar">
+          <div class="quest-section-label">HAMQuests — SASS</div>
+        </div>
+        <div class="quest-body">
+
+          <!-- Quest 1 -->
+          <div class="quest-row">
+            <div class="quest-row-header">
+              <div class="quest-row-title">Release and activate proposal for Ninman Intersection Social Arcology</div>
+              <span class="new-badge">NEW</span>
+            </div>
+            <div class="hambits-line">◆ 10,000 HAMbits</div>
+            <div class="quest-desc-text">Finalize and publicly release the full proposal document for the Ninman Intersection Social Arcology project. Coordinate activation steps with all partners and ensure stakeholder sign-off before public distribution. This quest gates all downstream SASS initiatives.</div>
+            <div class="quest-row-controls">
+              <button class="arrow-btn">↓</button>
+              <button class="quest-btn complete">COMPLETE</button>
+              <button class="quest-btn delete">DELETE</button>
+            </div>
+          </div>
+
+          <!-- Quest 2 -->
+          <div class="quest-row">
+            <div class="quest-row-header">
+              <div class="quest-row-title">Find Patron For Ninmarcology</div>
+              <span class="new-badge">NEW</span>
+            </div>
+            <div class="quest-progress-bar-wrap">
+              <div class="quest-progress-fill" style="width:0%;"></div>
+            </div>
+            <div class="quest-progress-label">0 / 1 Steps</div>
+            <div class="quest-row-controls">
+              <button class="arrow-btn">↑</button>
+              <button class="arrow-btn">↓</button>
+              <button class="quest-btn complete">COMPLETE</button>
+              <button class="quest-btn delete">DELETE</button>
+            </div>
+          </div>
+
+          <!-- Quest 3 -->
+          <div class="quest-row">
+            <div class="quest-row-header">
+              <div class="quest-row-title">Cast The Superstudio</div>
+              <span class="new-badge">NEW</span>
+            </div>
+            <div class="hambits-line">◆ 500 HAMbits</div>
+            <div class="quest-progress-bar-wrap">
+              <div class="quest-progress-fill" style="width:0%;"></div>
+            </div>
+            <div class="quest-progress-label">0 / 1 Steps</div>
+            <div class="quest-row-controls">
+              <button class="arrow-btn">↑</button>
+              <button class="quest-btn complete">COMPLETE</button>
+              <button class="quest-btn delete">DELETE</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ===== TAB SWITCHING JS ===== -->
+  <script>
+    const tabs = document.querySelectorAll('.nav-tab[data-page]');
+    const pages = document.querySelectorAll('.page');
+    function switchPage(pageId) {
+      document.body.className = 'p-' + pageId;
+      pages.forEach(p => p.classList.toggle('active', p.id === 'p-' + pageId));
+      tabs.forEach(t => t.classList.toggle('active', t.dataset.page === pageId));
+    }
+    tabs.forEach(t => t.addEventListener('click', () => switchPage(t.dataset.page)));
+    switchPage('itth'); // default
+  </script>
+
+</body>
+</html>
