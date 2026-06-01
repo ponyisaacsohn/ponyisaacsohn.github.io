@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HAMQuest — RBES</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── DESIGN TOKENS ─── */
+    :root {
+      /* orange–red palette */
+      --color-a:           #ff6b00;   /* hot orange */
+      --color-b:           #cc1100;   /* deep red */
+
+      /* backgrounds */
+      --color-bg:          #fff8f4;
+      --color-panel-bg:    #ffffff;
+      --color-nav-bg:      #1a0800;
+      --color-nav-text:    #ffddcc;
+      --color-nav-active-bg:   #ff6b00;
+      --color-nav-active-text: #ffffff;
+
+      /* chat */
+      --color-chat-bg:     #fffaf7;
+      --color-msg-self:    #cc5500;
+      --color-msg-other:   #cc1100;
+      --color-msg-muted:   #aaa;
+      --color-mention:     #cc1100;
+
+      /* quest */
+      --color-label:       #bb8866;
+      --color-title:       #1a0800;
+      --color-desc:        #664433;
+      --color-link:        #cc5500;
+      --color-pill-bg:     #fff0e6;
+      --color-pill-text:   #cc5500;
+      --color-pill-border: #ff6b00;
+      --color-action-complete: #228811;
+      --color-action-delete:   #cc1100;
+      --color-sq-x:        #ff6b00;
+      --color-add-step:    #cc5500;
+      --color-notification:#cc1100;
+      --color-tag-self:    #fff0e0;
+      --color-tag-self-t:  #cc5500;
+      --color-tag-other:   #ffe8e8;
+      --color-tag-other-t: #cc1100;
+      --color-sq-ref:      #fff3cc;
+      --color-sq-ref-t:    #996600;
+
+      /* double-dotted border */
+      --bd-color-1:        #ff6b00;   /* outer dot color */
+      --bd-color-2:        #cc1100;   /* inner dot color */
+      --bd-w:              3px;       /* dot border width */
+      --bd-gap:            4px;       /* gap between the two dotted lines */
+
+      /* typography */
+      --font-head:         'Bungee', sans-serif;
+      --font-body:         'Courier Prime', 'Courier New', monospace;
+      --fs-xs:             11px;
+      --fs-sm:             12px;
+      --fs-base:           13px;
+      --fs-lg:             15px;
+      --fs-hero:           28px;
+
+      /* layout */
+      --chat-width:        34%;
+      --nav-h:             44px;
+      --radius:            4px;
+      --radius-lg:         8px;
+    }
+
+    /* ─── DOUBLE-DOTTED BORDER MIXIN ─────────────────────────────
+       We simulate "double dotted" with:
+         border: dotted (outer line)  +  outline: dotted (inner line, inset)
+       outline-offset is negative to pull it inside.
+    ──────────────────────────────────────────────────────────────── */
+    .dd {
+      border: var(--bd-w) dotted var(--bd-color-1) !important;
+      outline: var(--bd-w) dotted var(--bd-color-2);
+      outline-offset: calc(-1 * (var(--bd-w) + var(--bd-gap)));
+    }
+
+    /* separator lines */
+    .sep {
+      height: 0;
+      border: none;
+      border-top: var(--bd-w) dotted var(--bd-color-1);
+      outline: none;
+      outline-offset: 5px;
+      /* second line via box-shadow */
+      box-shadow: 0 calc(var(--bd-w) + var(--bd-gap)) 0 0 var(--bd-color-2);
+      margin: calc(var(--bd-w) + var(--bd-gap) + 2px) 0;
+      flex-shrink: 0;
+    }
+
+    /* ─── RESET ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-body);
+      font-size: var(--fs-base);
+      background: var(--color-bg);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      color: var(--color-title);
+    }
+
+    /* ─── TOP NAV ─── */
+    .top-nav {
+      background: var(--color-nav-bg);
+      color: var(--color-nav-text);
+      height: var(--nav-h);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      flex-shrink: 0;
+      border-bottom: var(--bd-w) dotted var(--bd-color-1);
+    }
+    .top-nav .brand {
+      font-family: var(--font-head);
+      font-size: var(--fs-lg);
+      letter-spacing: 0.12em;
+      margin-right: 20px;
+      color: #ff9966;
+    }
+    .top-nav .nav-tabs { display: flex; height: 100%; }
+    .top-nav .nav-tab {
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      font-family: var(--font-head);
+      font-size: var(--fs-xs);
+      letter-spacing: 0.08em;
+      color: var(--color-nav-text);
+      border: none;
+      background: transparent;
+      height: 100%;
+      transition: background 0.15s;
+    }
+    .top-nav .nav-tab:hover { background: rgba(255,107,0,0.2); }
+    .top-nav .nav-tab.active {
+      background: var(--color-nav-active-bg);
+      color: var(--color-nav-active-text);
+    }
+    .top-nav .nav-tab .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--color-notification);
+      display: inline-block;
+      margin-right: 5px;
+    }
+
+    /* ─── MAIN ─── */
+    .main { display: flex; flex: 1; overflow: hidden; }
+
+    /* ─── CHAT PANEL ─── */
+    .chat-panel {
+      width: var(--chat-width);
+      min-width: 280px;
+      max-width: 520px;
+      background: var(--color-chat-bg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-right: var(--bd-w) dotted var(--bd-color-1);
+      /* second dotted line on right via outline won't work on panel, use box-shadow */
+      box-shadow: calc(var(--bd-w) + var(--bd-gap)) 0 0 0 var(--bd-color-2);
+      position: relative;
+      z-index: 1;
+    }
+
+    .chat-topbar {
+      padding: 10px 14px 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-shrink: 0;
+    }
+    .chat-topbar .title {
+      font-family: var(--font-head);
+      font-size: var(--fs-lg);
+      letter-spacing: 0.06em;
+      color: var(--color-title);
+    }
+    .chat-topbar .subtitle {
+      font-size: var(--fs-xs);
+      color: var(--color-label);
+      font-weight: 700;
+      margin-top: 2px;
+      max-width: 260px;
+      line-height: 1.4;
+    }
+    .chat-topbar .alert-link { font-size: var(--fs-xs); color: var(--color-label); cursor: pointer; text-decoration: underline; white-space: nowrap; }
+
+    .chat-subheader {
+      padding: 4px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .notif-badge {
+      background: var(--color-notification);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-head);
+    }
+    .chat-subheader .right { font-size: var(--fs-xs); color: var(--color-label); font-weight: 700; }
+
+    /* messages */
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px 0;
+    }
+
+    /* plain text message at top (no username) */
+    .chat-msg-plain {
+      padding: 6px 14px 10px;
+      font-size: var(--fs-base);
+      color: var(--color-title);
+      line-height: 1.5;
+      border-bottom: 1px dotted #ffbb99;
+    }
+
+    .chat-msg {
+      padding: 4px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .chat-msg .meta {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+    .chat-msg .username {
+      font-family: var(--font-head);
+      font-size: var(--fs-xs);
+      letter-spacing: 0.04em;
+      cursor: pointer;
+    }
+    .chat-msg .username.self  { color: var(--color-msg-self); }
+    .chat-msg .username.other { color: var(--color-msg-other); }
+    .chat-msg .timestamp { font-size: var(--fs-xs); color: var(--color-msg-muted); }
+    .chat-msg .actions {
+      margin-left: auto;
+      display: flex;
+      gap: 6px;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .chat-msg:hover .actions { opacity: 1; }
+    .chat-msg .actions span { cursor: pointer; font-size: 13px; color: var(--color-msg-muted); }
+    .chat-msg .body { font-size: var(--fs-base); line-height: 1.45; }
+
+    /* embedded image/document card */
+    .embed-card {
+      margin: 6px 0 4px;
+      border: var(--bd-w) dotted var(--bd-color-1);
+      outline: var(--bd-w) dotted var(--bd-color-2);
+      outline-offset: calc(-1 * (var(--bd-w) + var(--bd-gap)));
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      background: #fffaf7;
+      font-size: var(--fs-xs);
+      color: var(--color-desc);
+      max-width: 340px;
+    }
+    .embed-card .embed-title {
+      font-family: var(--font-head);
+      font-size: var(--fs-xs);
+      letter-spacing: 0.04em;
+      color: var(--color-title);
+      margin-bottom: 4px;
+    }
+    .embed-card .embed-body { line-height: 1.45; margin-bottom: 8px; }
+    .embed-card table { width: 100%; border-collapse: collapse; font-size: 10px; }
+    .embed-card th, .embed-card td { padding: 2px 4px; border: 1px dotted #ffbb99; text-align: left; }
+    .embed-card th { background: #fff0e6; font-family: var(--font-head); font-size: 9px; letter-spacing: 0.04em; }
+    .embed-card .embed-footer { font-size: 9px; color: #bbb; margin-top: 4px; text-align: right; }
+
+    /* composer label */
+    .composer-label {
+      padding: 6px 14px 0;
+      font-family: var(--font-head);
+      font-size: var(--fs-xs);
+      letter-spacing: 0.08em;
+      color: var(--color-label);
+      flex-shrink: 0;
+    }
+
+    /* chat input */
+    .chat-input-area {
+      padding: 8px 14px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .chat-input {
+      flex: 1;
+      border: var(--bd-w) dotted var(--bd-color-1);
+      outline: var(--bd-w) dotted var(--bd-color-2);
+      outline-offset: calc(-1 * (var(--bd-w) + var(--bd-gap)));
+      border-radius: var(--radius);
+      padding: 8px 10px;
+      font-size: var(--fs-base);
+      font-family: var(--font-body);
+      background: var(--color-panel-bg);
+    }
+    .chat-input:focus { outline-color: var(--bd-color-1); }
+    .img-btn, .send-btn {
+      border: var(--bd-w) dotted var(--bd-color-1);
+      outline: var(--bd-w) dotted var(--bd-color-2);
+      outline-offset: calc(-1 * (var(--bd-w) + var(--bd-gap)));
+      border-radius: var(--radius);
+      padding: 7px 14px;
+      font-size: var(--fs-sm);
+      font-family: var(--font-head);
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      background: var(--color-panel-bg);
+      color: var(--color-title);
+      transition: opacity 0.15s;
+    }
+    .send-btn {
+      background: var(--color-a);
+      color: #fff;
+      border-color: var(--color-b);
+      outline-color: var(--color-a);
+    }
+    .img-btn:hover, .send-btn:hover { opacity: 0.8; }
+
+    /* mini bar */
+    .mini-bar {
+      border-top: var(--bd-w) dotted var(--bd-color-1);
+      padding: 8px 14px;
+      font-size: var(--fs-xs);
+      color: var(--color-desc);
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      flex-shrink: 0;
+      background: var(--color-pill-bg);
+    }
+    .mini-label {
+      font-family: var(--font-head);
+      white-space: nowrap;
+      background: var(--color-nav-bg);
+      color: #ff9966;
+      padding: 4px 8px;
+      border-radius: var(--radius);
+      font-size: var(--fs-xs);
+      letter-spacing: 0.06em;
+    }
+    .mini-text { line-height: 1.5; }
+
+    /* ─── QUEST PANEL ─── */
+    .quest-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--color-bg);
+    }
+
+    /* detail header */
+    .quest-detail-header {
+      background: var(--color-panel-bg);
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      border-bottom: var(--bd-w) dotted var(--bd-color-1);
+    }
+    .quest-detail-header .left { display: flex; flex-direction: column; gap: 4px; }
+    .back-link { font-size: var(--fs-xs); color: var(--color-label); cursor: pointer; font-weight: 700; }
+    .quest-header-title { font-size: var(--fs-sm); font-weight: 700; color: var(--color-title); }
+    .edit-btn {
+      border: var(--bd-w) dotted var(--bd-color-1);
+      outline: var(--bd-w) dotted var(--bd-color-2);
+      outline-offset: calc(-1 * (var(--bd-w) + var(--bd-gap)));
+      border-radius: var(--radius);
+      padding: 7px 20px;
+      font-family: var(--font-head);
+      font-size: var(--fs-sm);
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      background: var(--color-panel-bg);
+      color: var(--color-title);
+    }
+    .edit-btn:hover { background: var(--color-pill-bg); }
+
+    .status-row {
+      padding: 8px 20px;
+      background: var(--color-panel-bg);
+      flex-shrink: 0;
+      border-bottom: var(--bd-w) dotted var(--bd-color-2);
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      background: var(--color-pill-bg);
+      color: var(--color-pill-text);
+      border: var(--bd-w) dotted var(--color-pill-border);
+      outline: var(--bd-w) dotted var(--bd-color-2);
+      outline-offset: calc(-1 * (var(--bd-w) + var(--bd-gap)));
+      border-radius: 20px;
+      padding: 3px 14px;
+      font-size: var(--fs-xs);
+      font-family: var(--font-head);
+      letter-spacing: 0.06em;
+    }
+
+    /* quest body */
+    .quest-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* subquest card */
+    .subquest-card {
+      background: var(--color-panel-bg);
+      border: var(--bd-w) dotted var(--bd-color-1);
+      outline: var(--bd-w) dotted var(--bd-color-2);
+      outline-offset: calc(-1 * (var(--bd-w) + var(--bd-gap)));
+      border-radius: var(--radius-lg);
+      padding: 18px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .sq-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .sq-label {
+      font-family: var(--font-head);
+      font-size: var(--fs-xs);
+      color: var(--color-label);
+      letter-spacing: 0.1em;
+    }
+    .sq-x { cursor: pointer; color: var(--color-sq-x); font-size: 18px; font-weight: 700; }
+    .sq-title {
+      font-family: var(--font-head);
+      font-size: var(--fs-lg);
+      color: var(--color-title);
+      letter-spacing: 0.03em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sq-pencil { font-size: 12px; color: var(--color-label); cursor: pointer; }
+
+    /* sub-steps */
+    .sq-steps { display: flex; flex-direction: column; gap: 6px; }
+    .sq-step {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      font-size: var(--fs-sm);
+      color: var(--color-desc);
+      line-height: 1.5;
+    }
+    .sq-step .step-ref {
+      font-family: var(--font-head);
+      font-size: var(--fs-xs);
+      color: var(--color-label);
+      white-space: nowrap;
+      letter-spacing: 0.04em;
+      padding-top: 1px;
+      min-width: 56px;
+    }
+    .sq-step .step-body { flex: 1; }
+    .tag {
+      display: inline;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: var(--fs-xs);
+      font-family: var(--font-head);
+      letter-spacing: 0.04em;
+    }
+    .tag.self  { background: var(--color-tag-self);  color: var(--color-tag-self-t); }
+    .tag.other { background: var(--color-tag-other); color: var(--color-tag-other-t); }
+
+    .add-step {
+      font-size: var(--fs-xs);
+      color: var(--color-add-step);
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .add-step:hover { text-decoration: underline; }
+
+    .hamdoc-link {
+      font-size: var(--fs-sm);
+      color: var(--color-link);
+      cursor: pointer;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══ TOP NAV ═══ -->
+  <nav class="top-nav">
+    <div class="brand">HAMQUEST</div>
+    <div class="nav-tabs">
+      <button class="nav-tab">ITTH</button>
+      <button class="nav-tab active">RBES</button>
+      <button class="nav-tab">CPAS</button>
+      <button class="nav-tab">S&amp;MGMT</button>
+      <button class="nav-tab">SASS</button>
+      <button class="nav-tab">HAMCORP</button>
+      <button class="nav-tab"><span class="dot"></span>ADMIN</button>
+    </div>
+  </nav>
+
+  <!-- ═══ MAIN ═══ -->
+  <div class="main">
+
+    <!-- ─── CHAT ─── -->
+    <aside class="chat-panel">
+
+      <div class="chat-topbar">
+        <div>
+          <div class="title">HAM Chat</div>
+          <div class="subtitle">Room / Rulebreakers English Studios JOB - RBES EUROPE CEO Room</div>
+        </div>
+        <span class="alert-link">Enable alerts</span>
+      </div>
+      <div class="sep" style="margin: 0;"></div>
+
+      <div class="chat-subheader">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="notif-badge">1</div>
+        </div>
+        <span class="right">JOBbb</span>
+      </div>
+      <div class="sep" style="margin: 0;"></div>
+
+      <div class="chat-messages">
+
+        <!-- plain question at top -->
+        <div class="chat-msg-plain">
+          what is the reward of the contest? is the scholarship mean a prize money or Free tuition fee + share of the company
+        </div>
+
+        <div class="chat-msg" style="margin-top:6px;">
+          <div class="meta">
+            <span class="username other">RBES Global CEO</span>
+            <span class="timestamp">· room · 09:57 AM</span>
+            <div class="actions"><span>↩</span><span>♡</span></div>
+          </div>
+          <div class="body">the second, it's free tuition plus hambits.</div>
+        </div>
+
+        <div class="chat-msg">
+          <div class="meta">
+            <span class="username other">RBES Global CEO</span>
+            <span class="timestamp">· room · 10:02 AM</span>
+            <div class="actions"><span>↩</span><span>♡</span></div>
+          </div>
+          <!-- embedded doc card 1 -->
+          <div class="embed-card">
+            <div class="embed-title">The Value of 1,000 HamBits Across Stages</div>
+            <div class="embed-body">The progression of 1,000 HamBits represents the exact amount a student earns for winning a high-value mission, capturing pure equity upside with zero financial outlay.</div>
+            <table>
+              <tr><th>Stage</th><th>Total Portfolio Value</th><th>Annual Income</th></tr>
+              <tr><td>S1</td><td>€120 <br/><small>The Library of Ham</small></td><td>€0 <br/><small>The Library of Ham</small></td></tr>
+              <tr><td>S2</td><td>€1,867</td><td>€25</td></tr>
+              <tr><td>S3</td><td>€3,82</td><td>€200</td></tr>
+              <tr><td>S4</td><td>€62,222</td><td>€2,178</td></tr>
+              <tr><td>S5</td><td>€180,000</td><td>€7,434</td></tr>
+            </table>
+            <div class="embed-footer">The Library of Ham</div>
+          </div>
+        </div>
+
+        <div class="chat-msg">
+          <div class="meta">
+            <span class="username other">RBES Global CEO</span>
+            <span class="timestamp">· room · 10:02 AM</span>
+            <div class="actions"><span>↩</span><span>♡</span></div>
+          </div>
+          <!-- embedded doc card 2 -->
+          <div class="embed-card">
+            <div class="embed-title">Stage Definitions and Economic Mechanisms</div>
+            <div class="embed-body">As the platform scales across the five stages, revenue grows tenfold per stage, and EBITDA margins expand from 5% to 59%. Because all after-tax income (taxed at 30% on EBITDA) is distributed to bit...</div>
+          </div>
+        </div>
+
+      </div><!-- /messages -->
+
+      <div class="composer-label">ROOM COMPOSER / RULEBREAKERS ENGLISH STUDIOS JOB - RBES EUROPE CEO ROOM</div>
+      <div class="sep" style="margin: 4px 0 0;"></div>
+
+      <div class="chat-input-area">
+        <input class="chat-input" type="text" placeholder="Send a room message" />
+        <button class="img-btn">IMAGE</button>
+        <button class="send-btn">SEND</button>
+      </div>
+
+      <div class="mini-bar">
+        <span class="mini-label">MYHAM MINI</span>
+        <span class="mini-text">
+          One, Proposal for ProjectTV, Enroll 10 Paying Students at ~$1000 per month,
+          Cast A Quorum Of the Roles, Make $200,000 for the team, Release and activate
+          proposal for Intersection Social Arcology, Find Patron For Ninmarcology.
+        </span>
+      </div>
+
+    </aside>
+
+    <!-- ─── QUEST DETAIL ─── -->
+    <main class="quest-panel">
+
+      <div class="quest-detail-header">
+        <div class="left">
+          <span class="back-link">← Quests</span>
+          <span class="quest-header-title">Rulebreakers English Studios Main Quest 2 — Enroll 10 Paying Students at ~$1000 per month</span>
+        </div>
+        <button class="edit-btn">EDIT</button>
+      </div>
+
+      <div class="status-row">
+        <span class="status-pill">New</span>
+      </div>
+
+      <div class="quest-body">
+
+        <!-- SUBQUEST 2 -->
+        <div class="subquest-card">
+          <div class="sq-meta">
+            <span class="sq-label">SUBQUEST 2 · SQ-02</span>
+            <span class="sq-x">×</span>
+          </div>
+          <div class="sq-title">Establish the Institution <span class="sq-pencil">✎</span></div>
+
+          <div class="sq-steps">
+            <div class="sq-step">
+              <span class="step-ref">SQ-02.1</span>
+              <span class="step-body"><span class="tag other">@JOB</span> - RBES EUROPE CEO : Propose 5 strange ideas or concepts for RBES website (rulebreakers.studio)</span>
+            </div>
+            <div class="sq-step">
+              <span class="step-ref">SQ-02.2</span>
+              <span class="step-body"><span class="tag self">@Evans</span> - RBES ASIA CEO: propose 5 concepts for rulebreakers.studio site</span>
+            </div>
+            <div class="sq-step">
+              <span class="step-ref">SQ-02.3</span>
+              <span class="step-body">TEAM: Create Rulebreakers Manifesto</span>
+            </div>
+          </div>
+
+          <span class="add-step">+ Add step</span>
+          <span class="hamdoc-link">📄 Hamdoc — Establish the Institution</span>
+        </div>
+
+        <!-- SUBQUEST 3 -->
+        <div class="subquest-card">
+          <div class="sq-meta">
+            <span class="sq-label">SUBQUEST 3 · SQ-03</span>
+            <span class="sq-x">×</span>
+          </div>
+          <div class="sq-title">Start The Contest for the Three Cofounding Student Scholarships <span class="sq-pencil">✎</span></div>
+
+          <div class="sq-steps">
+            <div class="sq-step">
+              <span class="step-ref">SQ-03.1</span>
+              <span class="step-body"><span class="tag self">@Evans</span> - RBES ASIA CEO : Develop Contest Plan for Chiang Mai</span>
+            </div>
+            <div class="sq-step">
+              <span class="step-ref">SQ-03.2</span>
+              <span class="step-body"><span class="tag other">@JOB</span> - RBES EUROPE CEO : Develop Contest Plan for Holland</span>
+            </div>
+          </div>
+
+          <span class="add-step">+ Add step</span>
+          <span class="hamdoc-link">📄 Hamdoc — Start The Contest for the Three Cofounding Student Scholarships</span>
+        </div>
+
+      </div><!-- /quest-body -->
+
+    </main>
+
+  </div><!-- /main -->
+
+</body>
+</html>
