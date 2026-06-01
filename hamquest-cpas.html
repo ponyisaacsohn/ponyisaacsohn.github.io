@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HAMQuest — CPAS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Bubblegum+Sans&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── DESIGN TOKENS ─── */
+    :root {
+      /* clown palette — each section gets its own wild color */
+      --clown-purple:   #7c2dff;
+      --clown-yellow:   #ffe033;
+      --clown-pink:     #ff3fa4;
+      --clown-cyan:     #00d4e8;
+      --clown-orange:   #ff6a00;
+      --clown-lime:     #6dff4f;
+      --clown-red:      #ff2222;
+      --clown-sky:      #c0f0ff;
+      --clown-peach:    #ffeccc;
+      --clown-lavender: #eeddff;
+      --clown-mint:     #d4ffef;
+
+      /* 3D shadow depth — increase for chunkier effect */
+      --depth: 5px;
+
+      /* fonts */
+      --font-head: 'Fredoka One', cursive;
+      --font-body: 'Bubblegum Sans', cursive;
+      --fs-xs:  11px;
+      --fs-sm:  13px;
+      --fs-base:14px;
+      --fs-lg:  17px;
+      --fs-xl:  15px;
+      --fs-hero:30px;
+
+      --chat-width: 34%;
+      --nav-h:      46px;
+      --radius:     8px;
+      --radius-lg:  14px;
+    }
+
+    /* ─── 3D BORDER HELPER ──────────────────────────────────────
+       Usage:  class="b3d" + inline style for --bc (border color)
+                                                --sc (shadow color)
+       Gives: solid border + offset box-shadow = chunky 3D look.
+    ──────────────────────────────────────────────────────────── */
+    .b3d {
+      border: 3px solid var(--bc, #222);
+      box-shadow: var(--depth) var(--depth) 0 var(--sc, #111);
+    }
+    .b3d-inset {
+      border: 3px solid var(--bc, #222);
+      box-shadow: inset 2px 2px 0 var(--sc, #ccc);
+    }
+
+    /* ─── RESET ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-body);
+      font-size: var(--fs-base);
+      background: var(--clown-sky);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ─── TOP NAV — deep purple with rainbow tabs ─── */
+    .top-nav {
+      background: var(--clown-purple);
+      height: var(--nav-h);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      flex-shrink: 0;
+      border-bottom: 4px solid #3d00c8;
+      box-shadow: 0 var(--depth) 0 #3d00c8;
+      gap: 0;
+    }
+    .top-nav .brand {
+      font-family: var(--font-head);
+      font-size: 20px;
+      letter-spacing: 0.1em;
+      color: var(--clown-yellow);
+      margin-right: 20px;
+      text-shadow: 3px 3px 0 #c85000;
+    }
+    .top-nav .nav-tabs { display: flex; height: 100%; }
+    .top-nav .nav-tab {
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      font-family: var(--font-head);
+      font-size: var(--fs-sm);
+      letter-spacing: 0.06em;
+      color: #fff;
+      border: none;
+      background: transparent;
+      height: 100%;
+      transition: background 0.1s;
+    }
+    .top-nav .nav-tab:hover { background: rgba(255,255,255,0.15); }
+    /* each tab gets its own active color */
+    .top-nav .nav-tab.t-itth:hover  { background: #ff3fa430; }
+    .top-nav .nav-tab.t-rbes:hover  { background: #ff6a0030; }
+    .top-nav .nav-tab.t-cpas.active { background: var(--clown-cyan); color: #111; border-bottom: 4px solid #007a8a; }
+    .top-nav .nav-tab.t-smgmt:hover { background: #6dff4f30; }
+    .top-nav .nav-tab.t-sass:hover  { background: #ff3fa430; }
+    .top-nav .nav-tab.t-ham:hover   { background: #ffe03330; }
+    .top-nav .nav-tab.t-admin { color: #ffc0f5; }
+    .top-nav .nav-tab .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--clown-red);
+      display: inline-block;
+      margin-right: 5px;
+      box-shadow: 0 0 0 2px #fff;
+    }
+
+    /* ─── MAIN ─── */
+    .main { display: flex; flex: 1; overflow: hidden; }
+
+    /* ─── CHAT PANEL — banana yellow background ─── */
+    .chat-panel {
+      width: var(--chat-width);
+      min-width: 280px;
+      max-width: 520px;
+      background: var(--clown-yellow);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-right: 4px solid #c8a800;
+      box-shadow: var(--depth) 0 0 #c8a800;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* chat top bar — hot pink section */
+    .chat-topbar {
+      background: var(--clown-pink);
+      padding: 10px 14px 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-shrink: 0;
+      border-bottom: 3px solid #a8006a;
+      box-shadow: 0 3px 0 #a8006a;
+    }
+    .chat-topbar .title {
+      font-family: var(--font-head);
+      font-size: var(--fs-lg);
+      color: #fff;
+      text-shadow: 2px 2px 0 #a8006a;
+      letter-spacing: 0.04em;
+    }
+    .chat-topbar .subtitle { font-size: var(--fs-xs); color: #ffe8f5; margin-top: 2px; }
+    .chat-topbar .alert-link { font-size: var(--fs-xs); color: #ffe8f5; cursor: pointer; text-decoration: underline; white-space: nowrap; }
+
+    /* channel subheader — orange */
+    .chat-subheader {
+      background: var(--clown-orange);
+      padding: 5px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      border-bottom: 3px solid #a83c00;
+      box-shadow: 0 3px 0 #a83c00;
+    }
+    .notif-badge {
+      background: var(--clown-red);
+      color: #fff;
+      font-size: 10px;
+      font-family: var(--font-head);
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      border: 2px solid #fff;
+      box-shadow: 2px 2px 0 #a80000;
+    }
+    .chat-subheader .right { font-family: var(--font-head); font-size: var(--fs-sm); color: #fff; letter-spacing: 0.04em; }
+
+    /* messages scroll — yellow bg */
+    .chat-messages { flex: 1; overflow-y: auto; padding: 10px 0; }
+
+    .chat-msg {
+      padding: 4px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .chat-msg .meta { display: flex; align-items: baseline; gap: 6px; }
+    .chat-msg .username {
+      font-family: var(--font-head);
+      font-size: var(--fs-sm);
+      cursor: pointer;
+      letter-spacing: 0.03em;
+    }
+    .chat-msg .username.clownli    { color: var(--clown-purple); text-shadow: 1px 1px 0 #3d00c8; }
+    .chat-msg .username.clownjamin { color: var(--clown-orange); text-shadow: 1px 1px 0 #a83c00; }
+    .chat-msg .timestamp { font-size: var(--fs-xs); color: #886600; }
+    .chat-msg .actions { margin-left: auto; display: flex; gap: 6px; opacity: 0; transition: opacity 0.15s; }
+    .chat-msg:hover .actions { opacity: 1; }
+    .chat-msg .actions span { cursor: pointer; font-size: 14px; color: #886600; }
+    .chat-msg .heart { color: var(--clown-red); font-size: var(--fs-xs); font-family: var(--font-head); }
+    .chat-msg .body { font-size: var(--fs-base); color: #332200; line-height: 1.45; }
+    .chat-msg .mention { color: var(--clown-purple); font-family: var(--font-head); font-size: var(--fs-sm); }
+
+    /* embedded role card — lavender with 3D purple border */
+    .embed-card {
+      margin: 6px 0 4px;
+      background: var(--clown-lavender);
+      border: 3px solid var(--clown-purple);
+      box-shadow: 4px 4px 0 #3d00c8;
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      font-size: var(--fs-xs);
+      color: #330066;
+      line-height: 1.7;
+      max-width: 360px;
+    }
+    .embed-card .role-row { display: block; }
+    .embed-card .role-title { font-family: var(--font-head); font-size: var(--fs-xs); letter-spacing: 0.03em; }
+    .embed-card .role-note { font-style: italic; color: #7744aa; }
+
+    /* composer label — lime green section */
+    .composer-label {
+      background: var(--clown-lime);
+      padding: 5px 14px;
+      font-family: var(--font-head);
+      font-size: var(--fs-xs);
+      letter-spacing: 0.06em;
+      color: #224400;
+      flex-shrink: 0;
+      border-top: 3px solid #33aa00;
+      border-bottom: 3px solid #33aa00;
+      box-shadow: inset 0 -3px 0 #33aa00;
+    }
+
+    /* chat input area — white on yellow */
+    .chat-input-area {
+      background: var(--clown-yellow);
+      padding: 8px 14px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .chat-input {
+      flex: 1;
+      border: 3px solid var(--clown-orange);
+      box-shadow: 3px 3px 0 #a83c00;
+      border-radius: var(--radius);
+      padding: 8px 10px;
+      font-size: var(--fs-base);
+      font-family: var(--font-body);
+      background: #fff;
+      outline: none;
+    }
+    .chat-input:focus { box-shadow: 3px 3px 0 var(--clown-purple); border-color: var(--clown-purple); }
+    .img-btn {
+      border: 3px solid var(--clown-purple);
+      box-shadow: 3px 3px 0 #3d00c8;
+      border-radius: var(--radius);
+      padding: 7px 14px;
+      font-family: var(--font-head);
+      font-size: var(--fs-sm);
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      background: var(--clown-lavender);
+      color: var(--clown-purple);
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .send-btn {
+      border: 3px solid #a83c00;
+      box-shadow: 3px 3px 0 #a83c00;
+      border-radius: var(--radius);
+      padding: 7px 14px;
+      font-family: var(--font-head);
+      font-size: var(--fs-sm);
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      background: var(--clown-orange);
+      color: #fff;
+      text-shadow: 1px 1px 0 #a83c00;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .img-btn:active, .send-btn:active {
+      transform: translate(3px, 3px);
+      box-shadow: 0 0 0 transparent;
+    }
+
+    /* mini bar — mint green */
+    .mini-bar {
+      background: var(--clown-mint);
+      border-top: 3px solid #00aa66;
+      box-shadow: inset 0 3px 0 #00dd88;
+      padding: 8px 14px;
+      font-size: var(--fs-xs);
+      color: #004422;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .mini-label {
+      font-family: var(--font-head);
+      white-space: nowrap;
+      background: var(--clown-purple);
+      color: var(--clown-yellow);
+      padding: 4px 10px;
+      border-radius: var(--radius);
+      font-size: var(--fs-xs);
+      border: 2px solid #3d00c8;
+      box-shadow: 2px 2px 0 #3d00c8;
+      text-shadow: 1px 1px 0 #3d00c8;
+    }
+    .mini-text { line-height: 1.55; }
+
+    /* ─── QUEST PANEL — sky blue background ─── */
+    .quest-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--clown-sky);
+    }
+
+    /* My HAMQuests header — peach section */
+    .quest-topbar {
+      background: var(--clown-peach);
+      padding: 12px 24px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-shrink: 0;
+      border-bottom: 3px solid #e8a000;
+      box-shadow: 0 3px 0 #e8a000;
+    }
+    .quest-topbar .section-title {
+      font-family: var(--font-head);
+      font-size: var(--fs-lg);
+      color: #663300;
+      letter-spacing: 0.04em;
+      text-shadow: 1px 1px 0 #e8a000;
+    }
+    .filter-pill {
+      display: inline-flex;
+      align-items: center;
+      background: var(--clown-cyan);
+      color: #004455;
+      border: 3px solid #007a8a;
+      box-shadow: 3px 3px 0 #007a8a;
+      border-radius: 20px;
+      padding: 3px 16px;
+      font-family: var(--font-head);
+      font-size: var(--fs-sm);
+      cursor: pointer;
+      letter-spacing: 0.04em;
+    }
+
+    /* quest body scroll */
+    .quest-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* quest card — white with cyan 3D border */
+    .quest-card {
+      background: #ffffff;
+      border: 3px solid #007a8a;
+      box-shadow: var(--depth) var(--depth) 0 #007a8a;
+      border-radius: var(--radius-lg);
+      padding: 32px 36px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .quest-card .card-label {
+      font-family: var(--font-head);
+      font-size: var(--fs-xs);
+      color: #888;
+      letter-spacing: 0.14em;
+    }
+
+    .quest-card .card-title-row {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+    .quest-card .card-title {
+      font-family: var(--font-head);
+      font-size: var(--fs-hero);
+      color: #111;
+      letter-spacing: 0.02em;
+      line-height: 1.1;
+    }
+    .new-badge {
+      background: var(--clown-cyan);
+      color: #004455;
+      border: 3px solid #007a8a;
+      box-shadow: 3px 3px 0 #007a8a;
+      border-radius: 6px;
+      padding: 2px 12px;
+      font-family: var(--font-head);
+      font-size: var(--fs-sm);
+      letter-spacing: 0.1em;
+      white-space: nowrap;
+    }
+    .hambits-value {
+      font-family: var(--font-head);
+      font-size: var(--fs-sm);
+      color: #888;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+
+    .quest-card .card-desc {
+      font-size: var(--fs-base);
+      color: #555;
+      font-style: italic;
+      line-height: 1.5;
+    }
+
+    /* progress bar — thick green with 3D */
+    .progress-wrap {
+      background: #ddd;
+      border-radius: 6px;
+      height: 14px;
+      border: 2px solid #888;
+      box-shadow: 2px 2px 0 #888;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 100%;   /* 2/2 steps = 100% */
+      background: var(--clown-lime);
+      border-radius: 4px;
+      box-shadow: inset 0 -3px 0 #33aa00;
+    }
+    .steps-label {
+      font-size: var(--fs-sm);
+      color: #555;
+      font-family: var(--font-head);
+      letter-spacing: 0.04em;
+    }
+
+    /* card actions */
+    .card-actions { display: flex; gap: 18px; margin-top: 4px; }
+    .card-action { font-family: var(--font-head); font-size: var(--fs-xs); letter-spacing: 0.1em; cursor: pointer; text-transform: uppercase; }
+    .card-action.complete { color: #228800; text-shadow: 1px 1px 0 #aaddaa; }
+    .card-action.delete   { color: var(--clown-red); text-shadow: 1px 1px 0 #ffaaaa; }
+
+    /* new quest */
+    .new-quest-btn {
+      font-family: var(--font-head);
+      font-size: var(--fs-sm);
+      color: #888;
+      letter-spacing: 0.1em;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 0;
+      text-transform: uppercase;
+    }
+    .new-quest-btn:hover { color: #333; }
+  </style>
+</head>
+<body>
+
+  <!-- ═══ TOP NAV ═══ -->
+  <nav class="top-nav">
+    <div class="brand">HAMQUEST</div>
+    <div class="nav-tabs">
+      <button class="nav-tab t-itth">ITTH</button>
+      <button class="nav-tab t-rbes">RBES</button>
+      <button class="nav-tab t-cpas active">CPAS</button>
+      <button class="nav-tab t-smgmt">S&amp;MGMT</button>
+      <button class="nav-tab t-sass">SASS</button>
+      <button class="nav-tab t-ham">HAMCORP</button>
+      <button class="nav-tab t-admin"><span class="dot"></span>ADMIN</button>
+    </div>
+  </nav>
+
+  <!-- ═══ MAIN ═══ -->
+  <div class="main">
+
+    <!-- ─── CHAT ─── -->
+    <aside class="chat-panel">
+
+      <div class="chat-topbar">
+        <div>
+          <div class="title">HAM Chat</div>
+          <div class="subtitle">Room / CPAS Clownli Room</div>
+        </div>
+        <span class="alert-link">Enable alerts</span>
+      </div>
+
+      <div class="chat-subheader">
+        <div class="notif-badge">1</div>
+        <span class="right">JOBbb</span>
+      </div>
+
+      <div class="chat-messages">
+
+        <div class="chat-msg">
+          <div class="meta">
+            <span class="username clownli">Clownli</span>
+            <span class="timestamp">· room · 04:09 PM</span>
+            <div class="actions"><span>↩</span><span>♡</span></div>
+          </div>
+          <div class="body">should we start here? <span class="mention">@Clownjamin</span></div>
+        </div>
+
+        <div class="chat-msg">
+          <div class="meta">
+            <span class="username clownjamin">Clownjamin</span>
+            <span class="timestamp">· room · 04:15 PM</span>
+            <div class="actions"><span>↩</span><span>♡</span></div>
+          </div>
+          <div class="body">Let's talk in the RBES room, as this is about CPAS as part of RBES</div>
+        </div>
+
+        <div class="chat-msg">
+          <div class="meta">
+            <span class="username clownjamin">Clownjamin</span>
+            <span class="timestamp">· room · 01:04 PM</span>
+            <div class="actions"><span>↩</span><span class="heart">♥ 1</span></div>
+          </div>
+          <!-- embedded roles card -->
+          <div class="embed-card">
+            <span class="role-row"><span class="role-title">chair of the board of directors</span> - Clownjamin</span>
+            <span class="role-row"><span class="role-title">creative advisor, member of board:</span> Clownli</span>
+            <span class="role-row"><span class="role-title">technical advisor, member of board:</span> Clownvans</span>
+            <span class="role-row"><span class="role-title">CEO</span> - responsible for orchestrating the whole vision of the company: <span class="role-note">Unfilled</span></span>
+            <span class="role-row"><span class="role-title">CTO</span> - responsible for the technology stack we're going to use: <span class="role-note">Unfilled</span></span>
+            <span class="role-row"><span class="role-title">COO</span> - responsible for the overall creative vision: <span class="role-note">Unfilled</span></span>
+            <span class="role-row"><span class="role-title">CMO</span> - responsible for marketing: <span class="role-note">Unfilled</span></span>
+            <span class="role-row"><span class="role-title">Head of Animation:</span> Responsible for All: <span class="role-note">Unfilled</span></span>
+            <span class="role-row"><span class="role-title">SHOWRUNNER(S) FAFA BABY:</span> Responsible for Fafa Baby: <span class="role-note">Unfilled</span></span>
+            <span class="role-row"><span class="role-title">Fafa Baby Producer:</span> Responsible for writing fafa baby, with the showrunners: <span class="role-note">Unfilled</span></span>
+            <span class="role-row"><span class="role-title">Fafaworld Character Animation:</span> Responsible for Character Animation: <span class="role-note">Unfilled</span></span>
+            <span class="role-row"><span class="role-title">Fafa World Setting Animation Lead:</span> Responsible for world creation in Fafa Baby: <span class="role-note">Unfilled</span></span>
+          </div>
+        </div>
+
+      </div><!-- /messages -->
+
+      <div class="composer-label">ROOM COMPOSER / CPAS CLOWNLI ROOM</div>
+
+      <div class="chat-input-area">
+        <input class="chat-input" type="text" placeholder="Send a room message" />
+        <button class="img-btn">IMAGE</button>
+        <button class="send-btn">SEND</button>
+      </div>
+
+      <div class="mini-bar">
+        <span class="mini-label">MYHAM MINI</span>
+        <span class="mini-text">
+          One, Proposal for ProjectTV, Enroll 10 Paying Students at ~$1000 per month,
+          Cast A Quorum Of the Roles, Make $200,000 for the team, Release and activate
+          proposal for Intersection Social Arcology, Find Patron For Ninmarcology.
+        </span>
+      </div>
+
+    </aside>
+
+    <!-- ─── QUEST PANEL ─── -->
+    <main class="quest-panel">
+
+      <div class="quest-topbar">
+        <div class="section-title">My HAMQuests</div>
+        <div><span class="filter-pill">Clownli</span></div>
+      </div>
+
+      <div class="quest-body">
+
+        <div class="quest-card">
+          <div class="card-label">CLOWNPUMP ANIMATION STUDIOS MAIN QUEST 1</div>
+
+          <div class="card-title-row">
+            <div class="card-title">Cast A Quorum Of the Roles</div>
+            <span class="new-badge">NEW</span>
+            <span class="hambits-value">10 HAMbits</span>
+          </div>
+
+          <div class="card-desc">The FGK winks for good luck.</div>
+
+          <div class="progress-wrap">
+            <div class="progress-fill"></div>
+          </div>
+          <div class="steps-label">2/2 Steps</div>
+
+          <div class="card-actions">
+            <span class="card-action complete">✓ Complete</span>
+            <span class="card-action delete">✕ Delete</span>
+          </div>
+        </div>
+
+        <button class="new-quest-btn">+ New Quest</button>
+
+      </div>
+
+    </main>
+
+  </div>
+
+</body>
+</html>
