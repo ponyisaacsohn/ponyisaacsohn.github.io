@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HAMQuest</title>
+  <style>
+    /* ─── DESIGN TOKENS — edit these to restyle everything ─── */
+    :root {
+      /* colors */
+      --color-bg:            #f5f5f5;
+      --color-panel-bg:      #ffffff;
+      --color-nav-bg:        #111111;
+      --color-nav-text:      #ffffff;
+      --color-nav-active-bg: #ffffff;
+      --color-nav-active-text: #111111;
+
+      --color-chat-bg:       #ffffff;
+      --color-chat-header-bg:#ffffff;
+      --color-chat-border:   #e0e0e0;
+      --color-chat-input-bg: #ffffff;
+
+      --color-msg-self:      #2ecc71;   /* JOBbb username color */
+      --color-msg-other:     #e74c3c;   /* BENJAMIN_CEO username color */
+      --color-msg-edited:    #999999;
+      --color-msg-action:    #cccccc;
+
+      --color-tab-bg:        #f0f0f0;
+      --color-tab-active-bg: #ffffff;
+      --color-tab-border:    #dddddd;
+
+      --color-quest-label:   #aaaaaa;
+      --color-quest-title:   #111111;
+      --color-quest-status:  #888888;
+      --color-quest-count:   #333333;
+      --color-quest-desc:    #555555;
+      --color-progress-bg:   #e0e0e0;
+      --color-progress-fill: #555555;
+
+      --color-action-complete: #27ae60;
+      --color-action-delete:   #e74c3c;
+
+      --color-btn-bg:        #111111;
+      --color-btn-text:      #ffffff;
+
+      --color-mini-bar-bg:   #ffffff;
+      --color-mini-bar-text: #333333;
+      --color-mini-bar-border: #dddddd;
+
+      --color-notification:  #e74c3c;
+      --color-quote-border:  #2ecc71;
+
+      --color-new-quest:     #999999;
+
+      /* typography */
+      --font-family:         'Helvetica Neue', Arial, sans-serif;
+      --font-size-base:      13px;
+      --font-size-sm:        11px;
+      --font-size-lg:        15px;
+      --font-size-xl:        26px;
+
+      /* spacing */
+      --radius:              4px;
+      --radius-lg:           8px;
+      --gap:                 12px;
+
+      /* layout */
+      --chat-width:          34%;
+      --nav-height:          42px;
+
+      /* borders */
+      --border-style:        1px solid var(--color-chat-border);
+    }
+
+    /* ─── RESET ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-family);
+      font-size: var(--font-size-base);
+      background: var(--color-bg);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ─── TOP NAV ─── */
+    .top-nav {
+      background: var(--color-nav-bg);
+      color: var(--color-nav-text);
+      height: var(--nav-height);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 0;
+      flex-shrink: 0;
+    }
+    .top-nav .brand {
+      font-weight: 700;
+      font-size: var(--font-size-lg);
+      letter-spacing: 0.08em;
+      margin-right: 24px;
+    }
+    .top-nav .nav-tabs {
+      display: flex;
+      height: 100%;
+      gap: 0;
+    }
+    .top-nav .nav-tab {
+      padding: 0 18px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: var(--color-nav-text);
+      border: none;
+      background: transparent;
+      height: 100%;
+      transition: background 0.15s;
+    }
+    .top-nav .nav-tab:hover { background: rgba(255,255,255,0.1); }
+    .top-nav .nav-tab.active {
+      background: var(--color-nav-active-bg);
+      color: var(--color-nav-active-text);
+    }
+    .top-nav .nav-tab .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--color-notification);
+      display: inline-block;
+      margin-right: 5px;
+    }
+
+    /* ─── MAIN BODY ─── */
+    .main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ─── LEFT: CHAT PANEL ─── */
+    .chat-panel {
+      width: var(--chat-width);
+      min-width: 280px;
+      max-width: 520px;
+      background: var(--color-chat-bg);
+      border-right: var(--border-style);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* chat panel top bar */
+    .chat-topbar {
+      border-bottom: var(--border-style);
+      padding: 0 14px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .chat-topbar .title { font-weight: 700; font-size: var(--font-size-lg); }
+    .chat-topbar .subtitle { font-size: var(--font-size-sm); color: var(--color-quest-label); }
+    .chat-topbar .alert-link {
+      font-size: var(--font-size-sm);
+      color: var(--color-quest-label);
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    /* chat sub-header */
+    .chat-subheader {
+      border-bottom: var(--border-style);
+      padding: 0 14px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      gap: 8px;
+    }
+    .chat-subheader .left { display: flex; align-items: center; gap: 10px; }
+    .chat-subheader .notif-badge {
+      background: var(--color-notification);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .chat-subheader .channel-name {
+      font-weight: 700;
+      font-size: var(--font-size-base);
+    }
+    .chat-subheader .room-link {
+      font-size: var(--font-size-sm);
+      color: var(--color-quest-label);
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    /* chat message list */
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 0;
+    }
+    .chat-msg {
+      padding: 4px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .chat-msg .meta {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+    .chat-msg .username {
+      font-weight: 700;
+      font-size: var(--font-size-sm);
+      cursor: pointer;
+    }
+    .chat-msg .username.self   { color: var(--color-msg-self); }
+    .chat-msg .username.other  { color: var(--color-msg-other); }
+    .chat-msg .timestamp {
+      font-size: var(--font-size-sm);
+      color: var(--color-msg-edited);
+    }
+    .chat-msg .edited-tag {
+      font-size: 10px;
+      color: var(--color-msg-edited);
+      font-style: italic;
+    }
+    .chat-msg .actions {
+      margin-left: auto;
+      display: flex;
+      gap: 6px;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .chat-msg:hover .actions { opacity: 1; }
+    .chat-msg .actions span { cursor: pointer; font-size: 14px; color: var(--color-msg-edited); }
+
+    .chat-msg .body { font-size: var(--font-size-base); color: #222; }
+
+    /* quoted/reply block */
+    .chat-msg .quote {
+      border-left: 3px solid var(--color-quote-border);
+      padding-left: 8px;
+      font-size: var(--font-size-sm);
+      color: var(--color-quest-label);
+      margin-bottom: 2px;
+    }
+    .chat-msg .quote .q-author { font-weight: 700; color: var(--color-msg-other); }
+    .chat-msg .quote .q-link   { color: #4a90d9; text-decoration: underline; cursor: pointer; }
+
+    /* chat input */
+    .chat-input-area {
+      border-top: var(--border-style);
+      padding: 8px 14px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .chat-input {
+      flex: 1;
+      border: var(--border-style);
+      border-radius: var(--radius);
+      padding: 8px 10px;
+      font-size: var(--font-size-base);
+      font-family: var(--font-family);
+      background: var(--color-chat-input-bg);
+      outline: none;
+    }
+    .chat-input:focus { border-color: #999; }
+    .send-btn {
+      background: var(--color-btn-bg);
+      color: var(--color-btn-text);
+      border: none;
+      border-radius: var(--radius);
+      padding: 8px 16px;
+      font-size: var(--font-size-base);
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      transition: opacity 0.15s;
+    }
+    .send-btn:hover { opacity: 0.8; }
+
+    /* mini bar at bottom of chat */
+    .mini-bar {
+      border-top: var(--border-style);
+      background: var(--color-mini-bar-bg);
+      padding: 8px 14px;
+      font-size: var(--font-size-sm);
+      color: var(--color-mini-bar-text);
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .mini-bar .mini-label {
+      font-weight: 700;
+      white-space: nowrap;
+      background: var(--color-btn-bg);
+      color: var(--color-btn-text);
+      padding: 4px 8px;
+      border-radius: var(--radius);
+    }
+    .mini-bar .mini-text {
+      line-height: 1.5;
+      color: var(--color-mini-bar-text);
+    }
+
+    /* ─── RIGHT: QUEST PANEL ─── */
+    .quest-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--color-bg);
+    }
+
+    /* quest tabs row */
+    .quest-tabs {
+      display: flex;
+      border-bottom: var(--border-style);
+      background: var(--color-panel-bg);
+      flex-shrink: 0;
+      overflow-x: auto;
+    }
+    .quest-tab {
+      padding: 0 20px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      border-right: var(--border-style);
+      background: var(--color-tab-bg);
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+    .quest-tab:hover { background: var(--color-panel-bg); }
+    .quest-tab.active {
+      background: var(--color-tab-active-bg);
+      border-bottom: 2px solid var(--color-nav-bg);
+    }
+
+    /* quest body */
+    .quest-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .quest-section-title {
+      font-size: var(--font-size-base);
+      font-weight: 700;
+      color: var(--color-quest-label);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* filter pill */
+    .filter-pill {
+      display: inline-flex;
+      align-items: center;
+      border: var(--border-style);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      background: var(--color-panel-bg);
+      cursor: pointer;
+    }
+
+    /* quest card */
+    .quest-card {
+      background: var(--color-panel-bg);
+      border: var(--border-style);
+      border-radius: var(--radius-lg);
+      padding: 28px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .quest-card .card-label {
+      font-size: var(--font-size-sm);
+      font-weight: 700;
+      color: var(--color-quest-label);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .quest-card .card-title {
+      font-size: var(--font-size-xl);
+      font-weight: 800;
+      color: var(--color-quest-title);
+      line-height: 1.2;
+    }
+    .quest-card .card-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .quest-card .status-badge {
+      font-size: var(--font-size-sm);
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--color-quest-status);
+    }
+    .quest-card .count-value {
+      font-size: var(--font-size-base);
+      color: var(--color-quest-count);
+      font-weight: 600;
+    }
+    .quest-card .card-desc {
+      font-size: var(--font-size-base);
+      color: var(--color-quest-desc);
+      font-style: italic;
+    }
+    .progress-bar-wrap {
+      background: var(--color-progress-bg);
+      border-radius: 4px;
+      height: 10px;
+      width: 100%;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--color-progress-fill);
+      border-radius: 4px;
+      width: 65%; /* change this % to adjust progress */
+      transition: width 0.3s;
+    }
+    .quest-card .steps-label {
+      font-size: var(--font-size-sm);
+      color: var(--color-quest-label);
+    }
+    .quest-card .card-actions {
+      display: flex;
+      gap: 16px;
+      margin-top: 4px;
+    }
+    .card-action {
+      font-size: var(--font-size-sm);
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      text-transform: uppercase;
+    }
+    .card-action.complete { color: var(--color-action-complete); }
+    .card-action.delete   { color: var(--color-action-delete); }
+
+    /* new quest button */
+    .new-quest-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: var(--font-size-sm);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--color-new-quest);
+      cursor: pointer;
+      text-transform: uppercase;
+      border: none;
+      background: transparent;
+      padding: 4px 0;
+    }
+    .new-quest-btn:hover { color: var(--color-quest-title); }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════ TOP NAV ═══════════════ -->
+  <nav class="top-nav">
+    <div class="brand">HAMQUEST</div>
+    <div class="nav-tabs">
+      <button class="nav-tab">ITTH</button>
+      <button class="nav-tab">RBES</button>
+      <button class="nav-tab">CPAS</button>
+      <button class="nav-tab">S&amp;MGMT</button>
+      <button class="nav-tab">SASS</button>
+      <button class="nav-tab">HAMCORP</button>
+      <button class="nav-tab active"><span class="dot"></span>ADMIN</button>
+    </div>
+  </nav>
+
+  <!-- ═══════════════ MAIN ═══════════════ -->
+  <div class="main">
+
+    <!-- ─── LEFT: CHAT ─── -->
+    <aside class="chat-panel">
+
+      <!-- chat panel header -->
+      <div class="chat-topbar">
+        <div>
+          <div class="title">HAM Chat</div>
+          <div class="subtitle">DM / PLACEHOLDER_USER</div>
+        </div>
+        <span class="alert-link">Enable alerts</span>
+      </div>
+
+      <!-- channel subheader -->
+      <div class="chat-subheader">
+        <div class="left">
+          <div class="notif-badge">1</div>
+          <span class="channel-name">DM / PLACEHOLDER_USER</span>
+        </div>
+        <span class="room-link">← Room chat</span>
+      </div>
+
+      <!-- messages -->
+      <div class="chat-messages">
+
+        <div class="chat-msg">
+          <div class="meta">
+            <span class="username other">OTHER_USER</span>
+            <span class="timestamp">· dm · 09:12 AM</span>
+            <div class="actions"><span>↩</span><span>♡</span></div>
+          </div>
+          <div class="body">let's start with a placeholder chat message here</div>
+        </div>
+
+        <div class="chat-msg">
+          <div class="meta">
+            <span class="username self">YOU</span>
+            <span class="timestamp">· dm · 09:51 AM</span>
+            <div class="actions"><span>↩</span><span>♡</span></div>
+          </div>
+          <div class="quote">
+            <span class="q-author">OTHER_USER: </span>
+            <span class="q-link">https://placeholder-link.example.com/some/path...</span>
+          </div>
+          <div class="body">A placeholder reply to the quoted message above.</div>
+        </div>
+
+        <div class="chat-msg">
+          <div class="meta">
+            <span class="username self">YOU</span>
+            <span class="timestamp">· dm · 12:43 PM</span>
+            <span class="edited-tag">(edited)</span>
+            <div class="actions"><span>↩</span><span>♡</span></div>
+          </div>
+          <div class="body">testing, this message has been edited</div>
+        </div>
+
+        <div class="chat-msg">
+          <div class="meta">
+            <span class="username self">YOU</span>
+            <span class="timestamp">· dm · 12:43 PM</span>
+            <div class="actions"><span>↩</span><span>♡</span></div>
+          </div>
+          <div class="body">Short message example</div>
+        </div>
+
+        <div class="chat-msg">
+          <div class="meta">
+            <span class="username self">YOU</span>
+            <span class="timestamp">· dm · 11:27 AM</span>
+            <div class="actions"><span>↩</span><span>♡</span></div>
+          </div>
+          <div class="body">hello world</div>
+        </div>
+
+        <div class="chat-msg">
+          <div class="meta">
+            <span class="username other">OTHER_USER</span>
+            <span class="timestamp">· dm · 11:29 AM</span>
+            <div class="actions"><span>↩</span><span>♡</span></div>
+          </div>
+          <div class="body">hi there, placeholder response</div>
+        </div>
+
+        <div class="chat-msg">
+          <div class="meta">
+            <span class="username self">YOU</span>
+            <span class="timestamp">· dm · 12:57 PM</span>
+            <div class="actions"><span>↩</span><span>♡</span></div>
+          </div>
+          <div class="body">ok I'm back in</div>
+        </div>
+
+        <div class="chat-msg">
+          <div class="meta">
+            <span class="username other">OTHER_USER</span>
+            <span class="timestamp">· dm · 12:59 PM</span>
+            <div class="actions"><span>↩</span><span>♡</span></div>
+          </div>
+          <div class="body">great</div>
+        </div>
+
+      </div><!-- /chat-messages -->
+
+      <!-- input row -->
+      <div class="chat-input-area">
+        <input class="chat-input" type="text" placeholder="Message PLACEHOLDER_USER" />
+        <button class="send-btn">SEND</button>
+      </div>
+
+      <!-- mini bar -->
+      <div class="mini-bar">
+        <span class="mini-label">MYHAM MINI</span>
+        <span class="mini-text">
+          One, Proposal for ProjectTV, Enroll 10 Paying Students at ~$1000 per month,
+          Cast A Quorum Of the Roles, Make $200,000 for the team, Release and activate
+          proposal for Intersection Social Arcology, Find Patron For Ninmarcology.
+        </span>
+      </div>
+
+    </aside><!-- /chat-panel -->
+
+    <!-- ─── RIGHT: QUEST PANEL ─── -->
+    <main class="quest-panel">
+
+      <!-- tab row inside quest panel -->
+      <div class="quest-tabs">
+        <div class="quest-tab active">HamLi, COO</div>
+        <div class="quest-tab">TeamMember1</div>
+        <div class="quest-tab">TeamMember2</div>
+      </div>
+
+      <!-- quest content -->
+      <div class="quest-body">
+
+        <div class="quest-section-title">My HAMQuests</div>
+
+        <!-- quest card -->
+        <div class="quest-card">
+          <div class="card-label">HAMCORP MAIN QUEST 1</div>
+          <div class="card-title">Sell 100,000 Placeholder Units at $10 Each</div>
+
+          <div class="card-row">
+            <span class="status-badge">IN PROGRESS</span>
+            <span class="count-value">518,000 Units</span>
+          </div>
+
+          <div class="card-desc">it all starts here.</div>
+
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill"></div>
+          </div>
+
+          <div class="steps-label">25/38 Steps</div>
+
+          <div class="card-actions">
+            <span class="card-action complete">✓ Complete</span>
+            <span class="card-action delete">✕ Delete</span>
+          </div>
+        </div>
+
+        <!-- new quest -->
+        <button class="new-quest-btn">+ NEW QUEST</button>
+
+      </div><!-- /quest-body -->
+
+    </main><!-- /quest-panel -->
+
+  </div><!-- /main -->
+
+</body>
+</html>
