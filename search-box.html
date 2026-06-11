@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Search</title>
+  <style>
+    :root {
+      --color-bg:        #f5f5f5;
+      --color-panel-bg:  #ffffff;
+      --color-border:    #000000;
+      --color-btn-bg:    #111111;
+      --color-btn-text:  #ffffff;
+      --color-tag-bg:    #f0f0f0;
+      --color-tag-text:  #333333;
+      --color-tag-hover: #111111;
+
+      --font-family:     'Helvetica Neue', Arial, sans-serif;
+      --font-size-base:  14px;
+      --font-size-sm:    12px;
+
+      --radius:          4px;
+      --border-style:    2px solid var(--color-border);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-family);
+      font-size: var(--font-size-base);
+      background: var(--color-bg);
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    .search-wrap {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .search-input {
+      flex: 1;
+      border: var(--border-style);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      font-size: var(--font-size-base);
+      font-family: var(--font-family);
+      background: var(--color-panel-bg);
+      outline: none;
+    }
+    .search-input:focus { border-color: #999; }
+
+    .search-btn {
+      background: var(--color-btn-bg);
+      color: var(--color-btn-text);
+      border: none;
+      border-radius: var(--radius);
+      padding: 10px 18px;
+      font-size: var(--font-size-base);
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      transition: opacity 0.15s;
+    }
+    .search-btn:hover { opacity: 0.8; }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      border: var(--border-style);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      color: var(--color-tag-text);
+      background: var(--color-tag-bg);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .tag:hover {
+      background: var(--color-tag-hover);
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="search-wrap">
+    <div class="search-row">
+      <input class="search-input" type="text" id="searchInput" placeholder="Search..." />
+      <button class="search-btn" onclick="performSearch()">Search</button>
+    </div>
+
+    <div class="tag-row">
+      <span class="tag" onclick="addTag('#DBBS')">#DBBS</span>
+      <span class="tag" onclick="addTag('#cozheng')">#cozheng</span>
+      <span class="tag" onclick="addTag('#IPA')">#IPA</span>
+      <span class="tag" onclick="addTag('#lecture_performance')">#lecture_performance</span>
+    </div>
+  </div>
+
+  <script>
+    function addTag(tag) {
+      const input = document.getElementById('searchInput');
+      const current = input.value.trim();
+
+      if (current.split(/\s+/).includes(tag)) return;
+
+      input.value = current ? current + ' ' + tag : tag;
+      input.focus();
+    }
+
+    function performSearch() {
+      const query = document.getElementById('searchInput').value.trim();
+      console.log('Searching for:', query);
+    }
+  </script>
+
+</body>
+</html>
