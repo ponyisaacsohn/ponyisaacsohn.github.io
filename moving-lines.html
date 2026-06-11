@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Moving Lines</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: #ffffff;
+    overflow: hidden;
+  }
+  canvas {
+    display: block;
+  }
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script>
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  const lineCount = 40;
+  const lines = [];
+
+  for (let i = 0; i < lineCount; i++) {
+    lines.push({
+      y: Math.random() * canvas.height,
+      speed: 0.3 + Math.random() * 1.5,
+      length: 100 + Math.random() * 300,
+      x: Math.random() * canvas.width,
+      width: 0.5 + Math.random() * 2,
+      angle: (Math.random() - 0.5) * 0.6
+    });
+  }
+
+  function animate() {
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.strokeStyle = '#000000';
+
+    for (const line of lines) {
+      line.x += line.speed;
+      if (line.x - line.length > canvas.width) {
+        line.x = -line.length;
+        line.y = Math.random() * canvas.height;
+        line.length = 100 + Math.random() * 300;
+        line.speed = 0.3 + Math.random() * 1.5;
+        line.width = 0.5 + Math.random() * 2;
+        line.angle = (Math.random() - 0.5) * 0.6;
+      }
+
+      const dx = Math.cos(line.angle) * line.length;
+      const dy = Math.sin(line.angle) * line.length;
+
+      ctx.lineWidth = line.width;
+      ctx.beginPath();
+      ctx.moveTo(line.x, line.y);
+      ctx.lineTo(line.x + dx, line.y + dy);
+      ctx.stroke();
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+</script>
+</body>
+</html>
