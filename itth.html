@@ -39,10 +39,11 @@
     /* ─── VERTICAL HEADER ─── */
     .vertical-header {
       flex-shrink: 0;
+      width: clamp(5rem, 9vw, 9rem);
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 2.5rem 0.75rem;
+      padding: 2.5rem 0.5rem;
       border-right: 1px solid var(--rule);
     }
     .vertical-header h1 {
@@ -50,10 +51,10 @@
       transform: rotate(180deg);
       font-family: 'Playfair Display', serif;
       font-weight: 900;
-      font-size: clamp(1.6rem, 2.6vw, 2.6rem);
-      line-height: 1.15;
+      font-size: clamp(2.4rem, 4.4vw, 4.2rem);
+      line-height: 1.05;
       letter-spacing: 0.01em;
-      white-space: nowrap;
+      white-space: normal;
       margin: 0 auto;
     }
 
@@ -78,36 +79,38 @@
     .section-title {
       font-family: 'Playfair Display', serif;
       font-weight: 900;
-      font-size: clamp(1.9rem, 3.2vw, 2.75rem);
+      font-size: clamp(2.6rem, 4.6vw, 4rem);
       letter-spacing: -0.01em;
-      margin-bottom: 1.4rem;
+      margin-bottom: 1.6rem;
     }
 
     .workshop-list {
       display: flex;
       flex-direction: column;
-      gap: 1.6rem;
+      gap: 2rem;
     }
 
     .workshop {
       cursor: default;
       transition: color 0.25s ease;
-      max-width: 30ch;
+      max-width: 32ch;
     }
 
     .workshop .label {
       font-family: 'Playfair Display', serif;
       font-style: italic;
-      font-weight: 700;
-      font-size: 1.15rem;
+      font-weight: 800;
+      font-size: clamp(1.4rem, 2.1vw, 1.85rem);
       display: block;
-      margin-bottom: 0.15rem;
+      margin-bottom: 0.2rem;
     }
 
     .workshop .sub {
-      font-size: 1.05rem;
+      font-family: 'Playfair Display', serif;
+      font-weight: 800;
+      font-size: clamp(1.3rem, 2vw, 1.7rem);
       color: var(--muted);
-      line-height: 1.5;
+      line-height: 1.35;
       transition: color 0.25s ease;
     }
 
@@ -130,9 +133,9 @@
     .section .label {
       font-family: 'Playfair Display', serif;
       font-style: italic;
-      font-weight: 700;
-      font-size: 1.05rem;
-      line-height: 1.6;
+      font-weight: 800;
+      font-size: clamp(1.3rem, 2vw, 1.7rem);
+      line-height: 1.4;
     }
 
     /* ─── RIGHT COLUMN ─── */
@@ -195,21 +198,21 @@
       font-family: 'Playfair Display', serif;
       font-weight: 900;
       font-style: italic;
-      font-size: 1.4rem;
-      margin-bottom: 0.35rem;
-      line-height: 1.25;
+      font-size: clamp(1.6rem, 2.4vw, 2.1rem);
+      margin-bottom: 0.4rem;
+      line-height: 1.2;
     }
 
     .overlay-subtitle {
       font-family: 'Source Serif Pro', serif;
-      font-weight: 600;
-      font-size: 1.05rem;
-      margin-bottom: 0.9rem;
+      font-weight: 700;
+      font-size: clamp(1.1rem, 1.6vw, 1.35rem);
+      margin-bottom: 1rem;
       line-height: 1.4;
     }
 
     .overlay-text {
-      font-size: 0.98rem;
+      font-size: clamp(1rem, 1.3vw, 1.15rem);
       line-height: 1.6;
     }
 
