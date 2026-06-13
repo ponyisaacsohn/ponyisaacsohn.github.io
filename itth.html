@@ -331,26 +331,34 @@
   </div><!-- /page -->
 
   <script>
+    // ─── DEFAULT IMAGE ─── set the path/URL for the image shown before any hover
+    const DEFAULT_IMG = "";
+
     const imageDisplay = document.getElementById('imageDisplay');
     const overlay = document.getElementById('overlay');
     const overlayTitle = document.getElementById('overlayTitle');
     const overlaySubtitle = document.getElementById('overlaySubtitle');
     const overlayText = document.getElementById('overlayText');
 
+    function setImage(src) {
+      if (src) {
+        imageDisplay.style.backgroundImage = `url('${src}')`;
+        imageDisplay.classList.add('has-image');
+      } else {
+        imageDisplay.style.backgroundImage = 'none';
+        imageDisplay.classList.remove('has-image');
+      }
+    }
+
+    setImage(DEFAULT_IMG);
+
     const workshops = document.querySelectorAll('.workshop');
 
     workshops.forEach(item => {
       item.addEventListener('mouseenter', () => {
-        const img = item.dataset.img;
         const accent = getComputedStyle(item).getPropertyValue('--accent').trim();
 
-        if (img) {
-          imageDisplay.style.backgroundImage = `url('${img}')`;
-          imageDisplay.classList.add('has-image');
-        } else {
-          imageDisplay.style.backgroundImage = 'none';
-          imageDisplay.classList.remove('has-image');
-        }
+        setImage(item.dataset.img || DEFAULT_IMG);
 
         overlay.style.setProperty('--overlay-color', accent);
         overlayTitle.textContent = item.dataset.title || '';
@@ -360,8 +368,7 @@
       });
 
       item.addEventListener('mouseleave', () => {
-        imageDisplay.style.backgroundImage = 'none';
-        imageDisplay.classList.remove('has-image');
+        setImage(DEFAULT_IMG);
         overlay.classList.remove('visible');
       });
     });
