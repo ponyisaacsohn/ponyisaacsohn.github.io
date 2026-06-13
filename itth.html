@@ -258,7 +258,7 @@
                data-title="Gob Kee Experimental Nasi Workshop"
                data-subtitle="Season Zero Workshop"
                data-desc="Placeholder description — a hands-on culinary and performance workshop exploring fictive cuisine, ritual, and shared imagination through the lens of gob kee."
-               data-img="">
+               >
             <span class="label">gob kee experimental</span>
             <span class="sub">nasi workshop</span>
           </div>
@@ -267,7 +267,7 @@
                data-title="Volcano News Network: Magma Workshop"
                data-subtitle="Season Zero Workshop"
                data-desc="Placeholder description — participants build out a fictional news network reporting live from the volcano, blending broadcast performance with collective worldbuilding."
-               data-img="">
+               >
             <span class="label">volcano news network:</span>
             <span class="sub">magma workshop</span>
           </div>
@@ -276,7 +276,7 @@
                data-title="Experience Worker"
                data-subtitle="Guide to Hague Greenery — Weekend Workshop"
                data-desc="Rapidly prototype and create a digital guide to the best walks, rides, swims, forests, DJ gardens in the Haagosphere."
-               data-img="">
+               >
             <span class="label">experience worker</span>
             <span class="sub">guide to haag greenry</span>
           </div>
@@ -292,7 +292,7 @@
                data-title="Volcano News Network"
                data-subtitle="The First Week Broadcast — Season One"
                data-desc="Placeholder description — the volcano news network returns for a full week of live broadcasts, expanding the fictional institution into an ongoing performance series."
-               data-img="">
+               >
             <span class="label">volcano news network:</span>
             <span class="sub">the first week broadcast</span>
           </div>
@@ -308,7 +308,7 @@
                data-title="Who We Are"
                data-subtitle="The Mission of ITTH, BJSQJZ, A HamWorld"
                data-desc="Placeholder description — an overview of the mission behind The Institutional Theater of the Hague, its founding collectives, and the wider HamWorld it belongs to."
-               data-img="">
+               >
             <span class="label">The Mission of ITTH,</span>
             <span class="sub">BJSQJZ, A HamWorld</span>
           </div>
@@ -331,8 +331,20 @@
   </div><!-- /page -->
 
   <script>
-    // ─── DEFAULT IMAGE ─── set the path/URL for the image shown before any hover
-    const DEFAULT_IMG = "";
+    // ═══════════════════════════════════════════════════════════
+    // IMAGE LINKS — paste full URLs from your image host below.
+    // Each key matches a workshop's data-key attribute in the HTML.
+    // Leave a value as "" to fall back to the default image.
+    // ═══════════════════════════════════════════════════════════
+    const IMAGES = {
+      default: "",   // shown before any hover
+      w1:      "",   // gob kee experimental nasi workshop
+      w2:      "",   // volcano news network: magma workshop
+      w3:      "",   // experience worker: guide to haag greenry
+      w4:      "",   // volcano news network: the first week broadcast
+      who:     "",   // who we are
+    };
+    // ═══════════════════════════════════════════════════════════
 
     const imageDisplay = document.getElementById('imageDisplay');
     const overlay = document.getElementById('overlay');
@@ -350,15 +362,16 @@
       }
     }
 
-    setImage(DEFAULT_IMG);
+    setImage(IMAGES.default);
 
     const workshops = document.querySelectorAll('.workshop');
 
     workshops.forEach(item => {
       item.addEventListener('mouseenter', () => {
         const accent = getComputedStyle(item).getPropertyValue('--accent').trim();
+        const key = item.dataset.key;
 
-        setImage(item.dataset.img || DEFAULT_IMG);
+        setImage(IMAGES[key] || IMAGES.default);
 
         overlay.style.setProperty('--overlay-color', accent);
         overlayTitle.textContent = item.dataset.title || '';
@@ -368,7 +381,7 @@
       });
 
       item.addEventListener('mouseleave', () => {
-        setImage(DEFAULT_IMG);
+        setImage(IMAGES.default);
         overlay.classList.remove('visible');
       });
     });
