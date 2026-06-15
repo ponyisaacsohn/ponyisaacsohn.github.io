@@ -7,8 +7,18 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,700;1,900&family=Source+Serif+Pro:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     The Institutional Theater of the Hague — self-contained block.
+     Everything is scoped under .itth-root so it can be dropped
+     straight into a page without touching <html>/<body> styles.
+     ═══════════════════════════════════════════════════════════ -->
+<div class="itth-root">
+
   <style>
-    :root {
+    .itth-root {
       --bg: #fafafa;
       --ink: #161616;
       --muted: #6b6b6b;
@@ -19,85 +29,73 @@
       --c-workshop3: #3ca64b; /* experience worker: guide to haag greenry */
       --c-workshop4: #2f6fed; /* volcano news network: first week broadcast */
       --c-whoweare:  #f3b400; /* who we are */
-    }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    html, body {
+      box-sizing: border-box;
       width: 100%;
-      min-height: 100%;
-      overflow-x: hidden;
-    }
-
-    body {
+      display: grid;
+      grid-template-columns: 6rem 1fr 40%;
+      align-items: stretch;
       font-family: 'Source Serif Pro', Georgia, serif;
       background: var(--bg);
       color: var(--ink);
-      display: flex;
+      overflow: hidden;
+    }
+
+    .itth-root * {
+      box-sizing: border-box;
     }
 
     /* ─── VERTICAL HEADER ─── */
-    .vertical-header {
-      flex-shrink: 0;
-      width: 6rem;
+    .itth-header {
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 2.5rem 0.5rem;
       border-right: 1px solid var(--rule);
     }
-    .vertical-header h1 {
+    .itth-header h1 {
       writing-mode: vertical-rl;
       transform: rotate(180deg);
       font-family: 'Playfair Display', serif;
       font-weight: 900;
-      font-size: 1rem;
+      font-size: 2.2rem;
       line-height: 1.05;
       letter-spacing: 0.01em;
       white-space: normal;
       margin: 0 auto;
     }
 
-    /* ─── PAGE LAYOUT ─── */
-    .page {
-      flex: 1;
-      display: flex;
-      flex-wrap: wrap;
-      min-width: 0;
-    }
-
     /* ─── LEFT COLUMN ─── */
-    .left-column {
-      flex: 1 1 60%;
-      min-width: 360px;
+    .itth-left {
       padding: 4rem 4%;
       display: flex;
       flex-direction: column;
       gap: 3.25rem;
+      min-width: 0;
     }
 
-    .season-title,
-    .section-title {
+    .itth-season-title,
+    .itth-section-title {
       font-family: 'Playfair Display', serif;
       font-weight: 900;
       font-size: 3rem;
       letter-spacing: -0.01em;
-      margin-bottom: 1.6rem;
+      margin: 0 0 1.6rem;
     }
 
-    .workshop-list {
+    .itth-workshop-list {
       display: flex;
       flex-direction: column;
       gap: 2rem;
     }
 
-    .workshop {
+    .itth-workshop {
       cursor: default;
       transition: color 0.25s ease;
       max-width: 32ch;
     }
 
-    .workshop .label {
+    .itth-workshop .itth-label {
       font-family: 'Playfair Display', serif;
       font-style: italic;
       font-weight: 800;
@@ -106,54 +104,53 @@
       margin-bottom: 0.2rem;
     }
 
-    .workshop .sub {
+    .itth-workshop .itth-sub {
       font-family: 'Playfair Display', serif;
       font-weight: 800;
       font-size: 1.7rem;
       color: var(--muted);
       line-height: 1.35;
       transition: color 0.25s ease;
+      display: block;
     }
 
-    .workshop:hover .sub { color: inherit; }
-    .workshop:hover { color: var(--accent); }
+    .itth-workshop:hover .itth-sub { color: inherit; }
+    .itth-workshop:hover { color: var(--accent); }
 
-    .workshop[data-key="w1"] { --accent: var(--c-workshop1); }
-    .workshop[data-key="w2"] { --accent: var(--c-workshop2); }
-    .workshop[data-key="w3"] { --accent: var(--c-workshop3); }
-    .workshop[data-key="w4"] { --accent: var(--c-workshop4); }
-    .workshop[data-key="who"] { --accent: var(--c-whoweare); }
+    .itth-workshop[data-key="w1"] { --accent: var(--c-workshop1); }
+    .itth-workshop[data-key="w2"] { --accent: var(--c-workshop2); }
+    .itth-workshop[data-key="w3"] { --accent: var(--c-workshop3); }
+    .itth-workshop[data-key="w4"] { --accent: var(--c-workshop4); }
+    .itth-workshop[data-key="who"] { --accent: var(--c-whoweare); }
 
-    .season + .season,
-    .season + .section,
-    .section + .section {
+    .itth-season + .itth-season,
+    .itth-season + .itth-section,
+    .itth-section + .itth-section {
       padding-top: 0.5rem;
       border-top: 1px solid var(--rule);
     }
 
-    .section .label {
+    .itth-section .itth-label {
       font-family: 'Playfair Display', serif;
       font-style: italic;
       font-weight: 800;
       font-size: 1.7rem;
       line-height: 1.4;
+      display: block;
     }
 
     /* ─── RIGHT COLUMN ─── */
-    .right-column {
-      flex: 1 1 40%;
-      min-width: 280px;
-      min-height: 420px;
+    .itth-right {
       position: relative;
       overflow: hidden;
+      min-height: 480px;
       background: #ededed;
     }
 
-    .image-display {
+    .itth-image {
       position: absolute;
       inset: 0;
       background-color: #ededed;
-      background-image: var(--default-img, none);
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
@@ -163,7 +160,7 @@
       justify-content: center;
     }
 
-    .image-display::before {
+    .itth-image::before {
       content: "Image placeholder — add link here";
       font-family: 'Source Serif Pro', serif;
       font-style: italic;
@@ -173,12 +170,12 @@
       padding: 0 2rem;
     }
 
-    .image-display.has-image::before {
+    .itth-image.has-image::before {
       content: "";
     }
 
     /* overlay info box */
-    .overlay {
+    .itth-overlay {
       position: absolute;
       top: 6%;
       left: 6%;
@@ -192,202 +189,195 @@
       background-color: var(--overlay-color, #ffffff);
     }
 
-    .overlay.visible {
+    .itth-overlay.visible {
       opacity: 1;
       transform: translateY(0);
     }
 
-    .overlay-title {
+    .itth-overlay-title {
       font-family: 'Playfair Display', serif;
       font-weight: 900;
       font-style: italic;
       font-size: 2rem;
-      margin-bottom: 0.4rem;
+      margin: 0 0 0.4rem;
       line-height: 1.2;
     }
 
-    .overlay-subtitle {
+    .itth-overlay-subtitle {
       font-family: 'Source Serif Pro', serif;
       font-weight: 700;
       font-size: 1.3rem;
-      margin-bottom: 1rem;
+      margin: 0 0 1rem;
       line-height: 1.4;
     }
 
-    .overlay-text {
+    .itth-overlay-text {
       font-size: 1.1rem;
       line-height: 1.6;
+      margin: 0;
     }
 
     /* ─── RESPONSIVE ─── */
     @media (max-width: 700px) {
-      body { flex-direction: column; }
-      .vertical-header {
-        width: 100%;
+      .itth-root {
+        grid-template-columns: 1fr;
+      }
+      .itth-header {
         border-right: none;
         border-bottom: 1px solid var(--rule);
         padding: 1.5rem;
       }
-      .vertical-header h1 {
+      .itth-header h1 {
         writing-mode: horizontal-tb;
         transform: none;
         font-size: 1.8rem;
       }
-      .left-column {
-        min-width: 0;
+      .itth-left {
         padding: 2.5rem 6%;
       }
     }
   </style>
-</head>
-<body>
 
   <!-- ═══ VERTICAL HEADER ═══ -->
-  <header class="vertical-header">
+  <header class="itth-header">
     <h1>The Institutional Theater of the Hague</h1>
   </header>
 
-  <div class="page">
+  <!-- ═══ LEFT COLUMN ═══ -->
+  <main class="itth-left">
 
-    <!-- ═══ LEFT COLUMN ═══ -->
-    <div class="left-column">
+    <section class="itth-season">
+      <h2 class="itth-season-title">Season Zero</h2>
+      <div class="itth-workshop-list">
 
-      <section class="season">
-        <h2 class="season-title">Season Zero</h2>
-        <div class="workshop-list">
-
-          <div class="workshop" data-key="w1"
-               data-title="Gob Kee Experimental Nasi Workshop"
-               data-subtitle="Season Zero Workshop"
-               data-desc="Placeholder description — a hands-on culinary and performance workshop exploring fictive cuisine, ritual, and shared imagination through the lens of gob kee."
-               >
-            <span class="label">gob kee experimental</span>
-            <span class="sub">nasi workshop</span>
-          </div>
-
-          <div class="workshop" data-key="w2"
-               data-title="Volcano News Network: Magma Workshop"
-               data-subtitle="Season Zero Workshop"
-               data-desc="Placeholder description — participants build out a fictional news network reporting live from the volcano, blending broadcast performance with collective worldbuilding."
-               >
-            <span class="label">volcano news network:</span>
-            <span class="sub">magma workshop</span>
-          </div>
-
-          <div class="workshop" data-key="w3"
-               data-title="Experience Worker"
-               data-subtitle="Guide to Hague Greenery — Weekend Workshop"
-               data-desc="Rapidly prototype and create a digital guide to the best walks, rides, swims, forests, DJ gardens in the Haagosphere."
-               >
-            <span class="label">experience worker</span>
-            <span class="sub">guide to haag greenry</span>
-          </div>
-
+        <div class="itth-workshop" data-key="w1"
+             data-title="Gob Kee Experimental Nasi Workshop"
+             data-subtitle="Season Zero Workshop"
+             data-desc="Placeholder description — a hands-on culinary and performance workshop exploring fictive cuisine, ritual, and shared imagination through the lens of gob kee.">
+          <span class="itth-label">gob kee experimental</span>
+          <span class="itth-sub">nasi workshop</span>
         </div>
-      </section>
 
-      <section class="season">
-        <h2 class="season-title">Season One</h2>
-        <div class="workshop-list">
-
-          <div class="workshop" data-key="w4"
-               data-title="Volcano News Network"
-               data-subtitle="The First Week Broadcast — Season One"
-               data-desc="Placeholder description — the volcano news network returns for a full week of live broadcasts, expanding the fictional institution into an ongoing performance series."
-               >
-            <span class="label">volcano news network:</span>
-            <span class="sub">the first week broadcast</span>
-          </div>
-
+        <div class="itth-workshop" data-key="w2"
+             data-title="Volcano News Network: Magma Workshop"
+             data-subtitle="Season Zero Workshop"
+             data-desc="Placeholder description — participants build out a fictional news network reporting live from the volcano, blending broadcast performance with collective worldbuilding.">
+          <span class="itth-label">volcano news network:</span>
+          <span class="itth-sub">magma workshop</span>
         </div>
-      </section>
 
-      <section class="section">
-        <h2 class="section-title">Who We Are</h2>
-        <div class="workshop-list">
-
-          <div class="workshop" data-key="who"
-               data-title="Who We Are"
-               data-subtitle="The Mission of ITTH, BJSQJZ, A HamWorld"
-               data-desc="Placeholder description — an overview of the mission behind The Institutional Theater of the Hague, its founding collectives, and the wider HamWorld it belongs to."
-               >
-            <span class="label">The Mission of ITTH,</span>
-            <span class="sub">BJSQJZ, A HamWorld</span>
-          </div>
-
+        <div class="itth-workshop" data-key="w3"
+             data-title="Experience Worker"
+             data-subtitle="Guide to Hague Greenery — Weekend Workshop"
+             data-desc="Rapidly prototype and create a digital guide to the best walks, rides, swims, forests, DJ gardens in the Haagosphere.">
+          <span class="itth-label">experience worker</span>
+          <span class="itth-sub">guide to haag greenry</span>
         </div>
-      </section>
 
-    </div><!-- /left-column -->
-
-    <!-- ═══ RIGHT COLUMN ═══ -->
-    <div class="right-column">
-      <div class="image-display" id="imageDisplay"></div>
-      <div class="overlay" id="overlay">
-        <div class="overlay-title" id="overlayTitle"></div>
-        <div class="overlay-subtitle" id="overlaySubtitle"></div>
-        <div class="overlay-text" id="overlayText"></div>
       </div>
+    </section>
+
+    <section class="itth-season">
+      <h2 class="itth-season-title">Season One</h2>
+      <div class="itth-workshop-list">
+
+        <div class="itth-workshop" data-key="w4"
+             data-title="Volcano News Network"
+             data-subtitle="The First Week Broadcast — Season One"
+             data-desc="Placeholder description — the volcano news network returns for a full week of live broadcasts, expanding the fictional institution into an ongoing performance series.">
+          <span class="itth-label">volcano news network:</span>
+          <span class="itth-sub">the first week broadcast</span>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="itth-section">
+      <h2 class="itth-section-title">Who We Are</h2>
+      <div class="itth-workshop-list">
+
+        <div class="itth-workshop" data-key="who"
+             data-title="Who We Are"
+             data-subtitle="The Mission of ITTH, BJSQJZ, A HamWorld"
+             data-desc="Placeholder description — an overview of the mission behind The Institutional Theater of the Hague, its founding collectives, and the wider HamWorld it belongs to.">
+          <span class="itth-label">The Mission of ITTH,</span>
+          <span class="itth-sub">BJSQJZ, A HamWorld</span>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ═══ RIGHT COLUMN ═══ -->
+  <aside class="itth-right">
+    <div class="itth-image" id="itthImage"></div>
+    <div class="itth-overlay" id="itthOverlay">
+      <h3 class="itth-overlay-title" id="itthOverlayTitle"></h3>
+      <p class="itth-overlay-subtitle" id="itthOverlaySubtitle"></p>
+      <p class="itth-overlay-text" id="itthOverlayText"></p>
     </div>
+  </aside>
 
-  </div><!-- /page -->
+</div><!-- /itth-root -->
 
-  <script>
-    // ═══════════════════════════════════════════════════════════
-    // IMAGE LINKS — paste full URLs from your image host below.
-    // Each key matches a workshop's data-key attribute in the HTML.
-    // Leave a value as "" to fall back to the default image.
-    // ═══════════════════════════════════════════════════════════
-    const IMAGES = {
-      default: "https://i.imgur.com/mG56JeG.jpeg",   // shown before any hover
-      w1:      "https://i.imgur.com/ZYN9LEd.jpeg",   // gob kee experimental nasi workshop
-      w2:      "https://i.imgur.com/1V1kgkx.jpeg",   // volcano news network: magma workshop
-      w3:      "https://i.imgur.com/J4fRJn6.jpeg",   // experience worker: guide to haag greenry
-      w4:      "https://i.imgur.com/lPLeShN.jpeg",   // volcano news network: the first week broadcast
-      who:     "https://i.imgur.com/cWf4Awl.jpeg",   // who we are
-    };
-    // ═══════════════════════════════════════════════════════════
+<script>
+(function () {
+  // ═══════════════════════════════════════════════════════════
+  // IMAGE LINKS — paste full URLs from your image host below.
+  // Each key matches a workshop's data-key attribute in the HTML.
+  // Leave a value as "" to fall back to the default image.
+  // ═══════════════════════════════════════════════════════════
+  const IMAGES = {
+    default: "https://i.imgur.com/mG56JeG.jpeg",   // shown before any hover
+    w1:      "https://i.imgur.com/ZYN9LEd.jpeg",   // gob kee experimental nasi workshop
+    w2:      "https://i.imgur.com/1V1kgkx.jpeg",   // volcano news network: magma workshop
+    w3:      "https://i.imgur.com/J4fRJn6.jpeg",   // experience worker: guide to haag greenry
+    w4:      "https://i.imgur.com/lPLeShN.jpeg",   // volcano news network: the first week broadcast
+    who:     "https://i.imgur.com/cWf4Awl.jpeg",   // who we are
+  };
+  // ═══════════════════════════════════════════════════════════
 
-    const imageDisplay = document.getElementById('imageDisplay');
-    const overlay = document.getElementById('overlay');
-    const overlayTitle = document.getElementById('overlayTitle');
-    const overlaySubtitle = document.getElementById('overlaySubtitle');
-    const overlayText = document.getElementById('overlayText');
+  const root = document.querySelector('.itth-root');
+  const image = root.querySelector('#itthImage');
+  const overlay = root.querySelector('#itthOverlay');
+  const overlayTitle = root.querySelector('#itthOverlayTitle');
+  const overlaySubtitle = root.querySelector('#itthOverlaySubtitle');
+  const overlayText = root.querySelector('#itthOverlayText');
 
-    function setImage(src) {
-      if (src) {
-        imageDisplay.style.backgroundImage = `url('${src}')`;
-        imageDisplay.classList.add('has-image');
-      } else {
-        imageDisplay.style.backgroundImage = 'none';
-        imageDisplay.classList.remove('has-image');
-      }
+  function setImage(src) {
+    if (src) {
+      image.style.backgroundImage = `url('${src}')`;
+      image.classList.add('has-image');
+    } else {
+      image.style.backgroundImage = 'none';
+      image.classList.remove('has-image');
     }
+  }
 
-    setImage(IMAGES.default);
+  setImage(IMAGES.default);
 
-    const workshops = document.querySelectorAll('.workshop');
+  root.querySelectorAll('.itth-workshop').forEach(item => {
+    item.addEventListener('mouseenter', () => {
+      const accent = getComputedStyle(item).getPropertyValue('--accent').trim();
+      const key = item.dataset.key;
 
-    workshops.forEach(item => {
-      item.addEventListener('mouseenter', () => {
-        const accent = getComputedStyle(item).getPropertyValue('--accent').trim();
-        const key = item.dataset.key;
+      setImage(IMAGES[key] || IMAGES.default);
 
-        setImage(IMAGES[key] || IMAGES.default);
-
-        overlay.style.setProperty('--overlay-color', accent);
-        overlayTitle.textContent = item.dataset.title || '';
-        overlaySubtitle.textContent = item.dataset.subtitle || '';
-        overlayText.textContent = item.dataset.desc || '';
-        overlay.classList.add('visible');
-      });
-
-      item.addEventListener('mouseleave', () => {
-        setImage(IMAGES.default);
-        overlay.classList.remove('visible');
-      });
+      overlay.style.setProperty('--overlay-color', accent);
+      overlayTitle.textContent = item.dataset.title || '';
+      overlaySubtitle.textContent = item.dataset.subtitle || '';
+      overlayText.textContent = item.dataset.desc || '';
+      overlay.classList.add('visible');
     });
-  </script>
+
+    item.addEventListener('mouseleave', () => {
+      setImage(IMAGES.default);
+      overlay.classList.remove('visible');
+    });
+  });
+})();
+</script>
 
 </body>
 </html>
