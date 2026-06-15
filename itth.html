@@ -456,6 +456,8 @@
 
   const workshops = root.querySelectorAll('.itth-workshop');
 
+  setImage(IMAGES.default);
+
   workshops.forEach(item => {
     item.addEventListener('click', () => {
       const isActive = item.classList.contains('active');
