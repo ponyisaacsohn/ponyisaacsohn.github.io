@@ -35,44 +35,74 @@
       font-size: clamp(1.8rem, 3.8vw, 3.6rem);
       line-height: 1.6;
       letter-spacing: 0.04em;
-      white-space: nowrap;
-      overflow: hidden;
-      width: 0;
       display: block;
     }
 
     .line.green  { color: #2d5a00; }
     .line.yellow { color: #e2f200; }
 
-    @keyframes typeReveal {
-      from { width: 0; }
-      to   { width: 100%; }
+    @keyframes blink {
+      50% { border-right-color: transparent; }
     }
 
-    .line.go {
-      animation: typeReveal 6s steps(60, end) forwards;
+    .line.typing {
+      border-right: 3px solid currentColor;
+      animation: blink 0.7s step-end infinite;
     }
   </style>
 </head>
 <body>
   <div class="text-container">
-    <span class="line green"  id="l1">The Institutional Theater of the Hague</span>
-    <span class="line green"  id="l2">(ITTH) offers discerning audiences</span>
-    <span class="line green"  id="l3">performances of nonexistent, hypothetical,</span>
-    <span class="line green"  id="l4">desired, dystopian, promising, explosive,</span>
-    <span class="line green"  id="l5">esoteric, and ecstatic institutions.</span>
-    <span class="line yellow" id="l6">This is Season Zero of the ITTH, our goals are to</span>
-    <span class="line yellow" id="l7">form the Ensemble and find partners and</span>
-    <span class="line yellow" id="l8">funders for season one.&nbsp; Season Zero has two</span>
-    <span class="line yellow" id="l9">arms: a series of paid workshops to share the</span>
-    <span class="line yellow" id="l10">magic powers of institutional performance</span>
+    <span class="line green"  id="l1"></span>
+    <span class="line green"  id="l2"></span>
+    <span class="line green"  id="l3"></span>
+    <span class="line green"  id="l4"></span>
+    <span class="line green"  id="l5"></span>
+    <span class="line yellow" id="l6"></span>
+    <span class="line yellow" id="l7"></span>
+    <span class="line yellow" id="l8"></span>
+    <span class="line yellow" id="l9"></span>
+    <span class="line yellow" id="l10"></span>
   </div>
 
   <script>
-    const lines = document.querySelectorAll('.line');
+    const texts = [
+      "The Institutional Theater of the Hague",
+      "(ITTH) offers discerning audiences",
+      "performances of nonexistent, hypothetical,",
+      "desired, dystopian, promising, explosive,",
+      "esoteric, and ecstatic institutions.",
+      "This is Season Zero of the ITTH, our goals are to",
+      "form the Ensemble and find partners and",
+      "funders for season one.  Season Zero has two",
+      "arms: a series of paid workshops to share the",
+      "magic powers of institutional performance",
+    ];
+
+    const SPEED = 55; // ms per character
+    const START_DELAY = 600;
+
+    function typeInto(el, text) {
+      let i = 0;
+      el.textContent = '';
+      el.classList.add('typing');
+      function tick() {
+        if (i < text.length) {
+          el.textContent += text[i++];
+          setTimeout(tick, SPEED);
+        } else {
+          el.classList.remove('typing');
+          el.style.borderRight = 'none';
+        }
+      }
+      tick();
+    }
+
     setTimeout(() => {
-      lines.forEach(l => l.classList.add('go'));
-    }, 600);
+      texts.forEach((text, idx) => {
+        typeInto(document.getElementById('l' + (idx + 1)), text);
+      });
+    }, START_DELAY);
   </script>
 </body>
 </html>
