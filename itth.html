@@ -26,7 +26,7 @@
     .text-container {
       width: 100%;
       max-width: 1200px;
-      text-align: center;
+      text-align: left;
     }
 
     .line {
@@ -79,17 +79,18 @@
       "magic powers of institutional performance",
     ];
 
-    const SPEED = 55; // ms per character
+    // Each line gets its own speed so they finish at different times
+    const speeds = [52, 67, 44, 71, 58, 63, 48, 75, 55, 60];
     const START_DELAY = 600;
 
-    function typeInto(el, text) {
+    function typeInto(el, text, speed) {
       let i = 0;
       el.textContent = '';
       el.classList.add('typing');
       function tick() {
         if (i < text.length) {
           el.textContent += text[i++];
-          setTimeout(tick, SPEED);
+          setTimeout(tick, speed);
         } else {
           el.classList.remove('typing');
           el.style.borderRight = 'none';
@@ -100,7 +101,7 @@
 
     setTimeout(() => {
       texts.forEach((text, idx) => {
-        typeInto(document.getElementById('l' + (idx + 1)), text);
+        typeInto(document.getElementById('l' + (idx + 1)), text, speeds[idx]);
       });
     }, START_DELAY);
   </script>
