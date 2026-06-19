@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ITTH — The Institutional Theater of the Hague</title>
+  <style>
+    @import url('https://fonts.cdnfonts.com/css/bodoni-72-smallcaps');
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      min-height: 100vh;
+    }
+
+    body {
+      background: linear-gradient(to bottom, #e8f500 0%, #2d5a00 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
+      padding: 60px 120px 60px 160px;
+    }
+
+    .text-container {
+      max-width: 900px;
+    }
+
+    /* Both spans are hidden until JS triggers them */
+    .part1, .part2 {
+      display: inline;
+      font-family: 'Bodoni 72 SmallCaps', 'Bodoni 72', 'Bodoni MT', Georgia, serif;
+      font-variant: small-caps;
+      font-size: clamp(1.5rem, 3.5vw, 2.6rem);
+      line-height: 1.55;
+    }
+
+    .part1 {
+      color: #2d5a00;
+    }
+
+    .part2 {
+      color: #e8f500;
+    }
+
+    /* Typewriter uses a wrapper that clips with a growing width */
+    .typewriter-wrap {
+      overflow: hidden;
+      display: inline;
+      white-space: normal;
+    }
+
+    /* We animate max-height + opacity on a block wrapper for each part */
+    .part-block {
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      transition: none;
+    }
+
+    .part-block.reveal {
+      animation: expandIn var(--duration, 4s) steps(var(--steps, 200), end) forwards;
+    }
+
+    @keyframes expandIn {
+      from {
+        max-height: 0;
+        opacity: 1;
+      }
+      to {
+        max-height: 2000px;
+        opacity: 1;
+      }
+    }
+
+    /* Character-level typewriter using clip-path on inline text */
+    .typed {
+      display: inline;
+      overflow: hidden;
+      white-space: pre-wrap;
+      border-right: 3px solid transparent;
+    }
+
+    .typed.typing {
+      border-right-color: currentColor;
+      animation: blink 0.7s step-end infinite;
+    }
+
+    @keyframes blink {
+      50% { border-right-color: transparent; }
+    }
+  </style>
+</head>
+<body>
+  <div class="text-container">
+    <span class="part1" id="part1"></span><span class="part2" id="part2"></span>
+  </div>
+
+  <script>
+    const text1 = "The Institutional Theater of the Hague (ITTH) offers discerning audiences performances of nonexistent, hypothetical, desired, dystopian, promising, explosive, esoteric, and ecstatic institutions.  ";
+    const text2 = "This is Season Zero of the ITTH, our goals are to form the Ensemble and find partners and funders for season one.  Season Zero has two arms: a series of paid workshops to share the magic powers of institutional performance";
+
+    const el1 = document.getElementById('part1');
+    const el2 = document.getElementById('part2');
+
+    const START_DELAY = 800;   // ms before typing begins
+    const SPEED1 = 28;         // ms per character, part 1
+    const SPEED2 = 28;         // ms per character, part 2
+    const PAUSE_BETWEEN = 120; // ms pause between parts
+
+    function typeText(el, text, speed, onDone) {
+      let i = 0;
+      el.textContent = '';
+      el.classList.add('typing');
+
+      function tick() {
+        if (i < text.length) {
+          el.textContent += text[i];
+          i++;
+          setTimeout(tick, speed);
+        } else {
+          el.classList.remove('typing');
+          if (onDone) onDone();
+        }
+      }
+      tick();
+    }
+
+    setTimeout(() => {
+      typeText(el1, text1, SPEED1, () => {
+        setTimeout(() => {
+          typeText(el2, text2, SPEED2, null);
+        }, PAUSE_BETWEEN);
+      });
+    }, START_DELAY);
+  </script>
+</body>
+</html>
